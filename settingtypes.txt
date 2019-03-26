@@ -1,0 +1,9 @@
+# PvP in PvP-Areas
+# true: only PvP in areas with the PvP-Flag true
+# false: PvP all over the world, but in areas with PvP-flag false PvP dosn't work.
+# default: true 
+pvp_only_in_pvp_areas (only PvP in areas with the PvP-Flag = true) bool true
+
+
+
+
