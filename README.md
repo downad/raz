@@ -28,27 +28,15 @@ a mod to do them all
 |command|parameters|what does the command do|who can use is
 |------|------|-------|-------| 
 region *params*| *status*| Show a list of this regions with all data.|all players
-mark_region *params* |	*pos1* | set one corner for the region | players privileg - region_lv1
+mark_region *params* |	*pos1* | set one corner for the region |  privileg - region_lv1
 | |	*pos2*| set the second corner for the region
-| |	*set* region_name| set an regon with the name 'region_name'
-| |	*remove* ID | remove an own-region with the 'ID'
-
-{players privileg - region_lv2}
-"set_region" <params>
-	params: 
-	<protected> true/false 
-	<invite> name
-
-{players privileg - region_lv3}
-"PvP_region" <params>
-	params: 
-	<PvP> true/false
-
-{players privileg - region_lv4}
-"form_region" <params>
-	params: 
-	<MvP> true/false
-	<effect> <hot,bot,holy,dot,choke,evil> 
+| |	*set* **region_name**| set an regon with the name 'region_name'
+| |	*remove* **ID** | remove an own-region with the 'ID'
+set_region *params* | *protected* **true/false** | Protect the region (true) or clear protection (false)  | privileg - region_lv2
+ | | *invite* **name** | invites player **name**. This player can 'dig' and 'build' like in an own protected region
+PvP_region *params* | *PvP* **true/false** | can make the zone ti become an arena with PvP (globaly PvP must be enabled) | privileg - region_lv3
+form_region *params* | *MvP* **true/false** | can enable or disabel that Mobs can damage the player | players privileg - region_lv4
+| | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone. hot = heal over time, dot = damage over time,...  
 
 
 
