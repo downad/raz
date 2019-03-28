@@ -27,18 +27,15 @@ a mod to do them all
 
 |command|parameters|what does the command do|who can use is
 |------|------|-------|-------| 
-{all players}
-"region" <params>
-	params: 
-	<status>	==> Show a list of this regions with all data.
 
-{players privileg - region_lv1}
-"mark_region" <params>
-	params: 
-	<pos1> 				==> set one corner for the region
-	<pos2> 				==> set the second corner for the region
-	<set> region_name	==>	set an regon with the name 'region_name'
-	<remove> ID			==> remove an own-region with the 'ID'
+"region" <params>| <status>| Show a list of this regions with all data.|all players
+
+
+
+"mark_region" <params>|	<pos1>| set one corner for the region | players privileg - region_lv1
+| |	<pos2>| set the second corner for the region
+| |	<set> region_name| set an regon with the name 'region_name'
+| |	<remove> ID | remove an own-region with the 'ID'
 
 {players privileg - region_lv2}
 "set_region" <params>
