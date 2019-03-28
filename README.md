@@ -1,7 +1,7 @@
 # raz
 Regions Areas and Zones for Minetest
 
-## inspiered by 
+## inspired by 
 + areas - ShadowNinja
 + pvp_areas - pvp_areas
 
@@ -24,6 +24,9 @@ a mod to do them all
 + "region_lv1" ==> Can set, remove own regions.
 
 ## commands
+
+|command|parameters|what does the command do|who can use is
+|------|------|-------|-------| 
 {all players}
 "region" <params>
 	params: 
