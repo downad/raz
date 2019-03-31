@@ -78,7 +78,7 @@ minetest.register_chatcommand("region", {
 
 
 -- use max size, kontrolliere, dss region nicht mit anderen regionen überlappt, nun eigen regionen in regionen 
-minetest.register_chatcommand("mark_region", {
+minetest.register_chatcommand("region_mark", {
 	description = "Mark, set and remove regions.",
 	params = "<pos1> <pos2> <set> <remove>",
 	privs = "region_lv1",
@@ -91,14 +91,14 @@ minetest.register_chatcommand("mark_region", {
 				raz.command_players[name].pos1 = pos
 			end
 			minetest.chat_send_player(name, "Position 1: " .. minetest.pos_to_string(pos))
-		elseif param == "pos2" then
+		elseif param == "pos2" then -- 'end' if param == 
 			if not raz.command_players[name] then
 				raz.command_players[name] = {pos2 = pos}
 			else
 				raz.command_players[name].pos2 = pos
 			end
 			minetest.chat_send_player(name, "Position 2: " .. minetest.pos_to_string(pos))
-		elseif param:sub(1, 3) == "set" then
+		elseif param:sub(1, 3) == "set" then -- 'end' if param == 
 			local region_name = param:sub(5, -1)
 			if not raz.command_players[name] or not raz.command_players[name].pos1 then
 				minetest.chat_send_player(name, "Position 1 missing, use \"/mark_region pos1\" to set.")
@@ -117,7 +117,7 @@ minetest.register_chatcommand("mark_region", {
 				raz.command_players[name] = nil
 
 			end
-		elseif param:sub(1, 6) == "remove" then
+		elseif param:sub(1, 6) == "remove" then -- 'end' if param == 
 			local n = tonumber(param:sub(8, -1))
 --[[
 			if n and pvp_raz_store:get_area(n) then
@@ -135,7 +135,7 @@ minetest.register_chatcommand("mark_region", {
 				minetest.chat_send_player(name, "Invalid argument.  You must enter a valid area identifier.")
 			end
 ]]--
-		elseif param ~= "" then
+		elseif param ~= "" then -- 'end' if param == 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help mark_region\" for more information.")
 --[[		else
 			for k, v in pairs(pvp_areas) do
@@ -144,6 +144,27 @@ minetest.register_chatcommand("mark_region", {
 						minetest.pos_to_string(v.max))
 			end
 ]]--
-		end
-	end
+		end -- 'end' if param == 
+	end -- end func = function(name, param)
 })
+
+
+minetest.register_chatcommand("region_special", {
+	description = "some specials for the region-mod",
+	params = "<parent> <import> <export>",
+	privs = "region_admin",
+	func = function(name, param)
+		local pos = vector.round(minetest.get_player_by_name(name):getpos())
+		if param == "parent" then
+		elseif param == "import" then -- 'end' if param == 
+			raz:import()
+		elseif param == "export" then -- 'end' if param == 
+			raz:export()	
+		elseif param ~= "" then -- 'end' if param == 
+			minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
+		end -- end if param == 
+	end -- end func = function(name, param)
+})
+	
+
+

@@ -9,11 +9,17 @@ Regions Areas and Zones for Minetest
 a mod to do them all
 - mark regions and show them in a hud
 - protect areas, invite guests 
-- create zones for PvP {Player vs Player}
-- prevent damage for player in cities {Mobdamage against Player - MvP}
+- create zones for PvP {Player vs. Player}
+- prevent damage for player in cities {Mobdamage vs. Player - MvP}
 - give areas an effect like 
--- holy {e.g. heal over time (hot)}
--- evil	{e.g. damage over time (dot)}
+|effect| description |
+|-----|-----|
+|hot| heal over time
+|bot | restore breath over time
+holy | both: heal an breath over time 
+dot| damage over time
+choke | reduve breath over time
+evil | both: damage and choke over time
 
 
 ## Privilegs:
@@ -28,15 +34,15 @@ a mod to do them all
 |command|parameters|what does the command do|who can use is
 |------|------|-------|-------| 
 region *params*| *status*| Show a list of this regions with all data.|all players
-mark_region *params* |	*pos1* | set one corner for the region |  privileg - region_lv1
+region_mark *params* |	*pos1* | set one corner for the region |  privileg - region_lv1
 | |	*pos2*| set the second corner for the region
 | |	*set* **region_name**| set an regon with the name **region_name**
 | |	*remove* **ID** | remove an own-region with the **ID**
-set_region *params* | *protected* **true/false** | Protect the region (true) or clear protection (false)  | privileg - region_lv2
+region_set *params* | *protected* **true/false** | Protect the region (true) or clear protection (false)  | privileg - region_lv2
  | | *invite* **name** | invites player **name**. This player can 'dig' and 'build' like in an own protected region
-PvP_region *params* | *PvP* **true/false** | can make the zone to become an arena with PvP (globaly PvP must be enabled) | privileg - region_lv3
-form_region *params* | *MvP* **true/false** | can enable or disabel that Mobs can damage the player | players privileg - region_lv4
-| | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone.  hot = heal over time, \n dot = damage over time,<br>...  
+region_pvp *params* | *PvP* **true/false** | can make the zone to become an arena with PvP (globaly PvP must be enabled) | privileg - region_lv3
+region_form *params* | *MvP* **true/false** | can enable or disable that Mobs can damage the player | privileg - region_lv4
+| | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...  
 
 
 

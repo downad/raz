@@ -36,6 +36,14 @@ raz = {
 	-- 			starve: reduce food over time 				-- will implement later
 	-- 			choke: reduce breath over time
 	-- 			evil: steals blood, breath (and food) over time
+	--	+ 	parent: if the region is marked as parent, other can set a region in that region.
+	--			e.g. the admin marks a city, the player can build houses in the city.
+	--			special flags:
+	--			protected: 	protected by admin, the player can mark a region, that region is protected for the player owner, he can not remove protected
+	--						only marked by the admin, the player can mark a region, that region is protected for the player but he can(!) remove protected
+	--			PvP:	if the region is marked as PvP - zone the player can not remove PvP
+	--			MvP:	if the region is marked as MvP - zone the player can not remove MvP
+	--			effects: a zone with an effect can not become parent, no player can mark a region there
 	raz_store = AreaStore(),
 
 	-- some defaults for the AreaStore data
@@ -45,6 +53,7 @@ raz = {
 		PvP = false,
 		MvP = true,
 		effect = "none",
+		parent = false,
  		-- the damage a player get for 'digging' in a protected region
 		damage_on_protection_violation = 4,
 		-- this is shown in hud if you are in an unmarked region
@@ -70,6 +79,7 @@ raz = {
 	},
 	-- the filename for AreaStore
 	store_file_name = "raz_store.dat",
+	export_file_name ="raz_export.dat",
 
 	regions = {},
 
@@ -132,151 +142,7 @@ raz:update_regions()
 
 
 --for debuging an exercises :)
-
--- set some regions
-local data = ""
-
--- test 1
--- vector(x,y,z) y -> up/down
-local pos1 = vector.new(0, -15, 128)  	-- down
-local pos2 = vector.new(-6, 25, 136)	-- up
-local owner = "adownad"
-local region_name = "Mein Haus"
-local protected = true				-- default = false
-local guest = ""					-- default = ""
-local guest1 = "dinad"
-local guest2 = "elrond"
-local guests = {}
-	table.insert(guests, guest1)
-	table.insert(guests, guest2)
-	local guests_string = raz:table_to_string(guests)	
-local PvP = true					-- default = false		
-local MvP = true					-- default = true
-local effect = "none"				-- default = none
- 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect)
-if data == 1 then
-	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
-else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
-end
-
---test 2
--- vector(x,y,z) y -> up/down
-pos1 = vector.new(2, -15, 160)  	-- down
-pos2 = vector.new(-5, 25, 154)		-- up
-owner = "dinad"
-region_name = "dinad Weide"
-protected = false				-- default = false
-guest = ""						-- default = ""
-guests = {}
-	table.insert(guests, guest)
-	guests_string = raz:table_to_string(guests)	
-PvP = false						-- default = false		
-MvP = true						-- default = true
-effect = "dot"					-- default = none
- 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect)
-if data == 1 then
-	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
-else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
-end
-
---test 3
--- vector(x,y,z) y -> up/down
-pos1 = vector.new(-10, -15, 141)  	-- down
-pos2 = vector.new(11, 25, 116)		-- up
-owner = "adownad"
-region_name = "Meine Garten um das Haus"
-protected = true					-- default = false
-guest = "downad"					-- default = ""
-guests = {}
-	table.insert(guests, guest)
-	 guests_string = raz:table_to_string(guests)	
-PvP = false						-- default = false		
-MvP = true						-- default = true
-effect = "none"					-- default = none
- 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect)
-if data == 1 then
-	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
-else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
-end
-
---test 4
--- vector(x,y,z) y -> up/down
-pos1 = vector.new(-15, -15, 148)  	-- down
-pos2 = vector.new(-11, 25, 146)		-- up
-owner = "adownad"
-region_name = "Tempel"
-protected = true					-- default = false
-guest = ""							-- default = ""
-guests = {}
-	table.insert(guests, guest)
-	 guests_string = raz:table_to_string(guests)	
-PvP = false						-- default = false		
-MvP = true						-- default = true
-effect = "holy"					-- default = none
- 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect)
-if data == 1 then
-	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
-else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
-end
-
-
---test 5
--- vector(x,y,z) y -> up/down
-pos1 = vector.new(13, -15, 148)  	-- down
-pos2 = vector.new(15, 25, 150)		-- up
-owner = "downad"
-region_name = "Evil Tempel"
-protected = true					-- default = false
-guest = ""							-- default = ""
-guests = {}
-	table.insert(guests, guest)
-	 guests_string = raz:table_to_string(guests)	
-PvP = true						-- default = false		
-MvP = true						-- default = true
-effect = "evil"					-- default = none
- 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect)
-if data == 1 then
-	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
-else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
-end
-
--- print a list of all raz.regions
-raz:print_regions()
-
-
-
--- only for debugging
-
-minetest.log("action", "[" .. raz.modname .. "] some regions created!")
-
--- Regiontest 
-local test_id = 0
-local counter = 0
-while raz.raz_store:get_area(counter) do
-	raz:print_region_datatable_for_id(counter)
-	counter = counter + 1
-end
-
+--dofile(raz.modpath.."/debug.lua")
 
 
 
