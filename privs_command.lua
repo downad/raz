@@ -150,16 +150,20 @@ minetest.register_chatcommand("region_mark", {
 
 
 minetest.register_chatcommand("region_special", {
-	description = "some specials for the region-mod",
-	params = "<parent> <import> <export>",
+	description = "some specials for the region-mod - needs region_admin privs!",
+	params = "<parent> <import> <export> <convert_areas> <import_areas>",
 	privs = "region_admin",
 	func = function(name, param)
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
 		if param == "parent" then
 		elseif param == "import" then -- 'end' if param == 
-			raz:import()
+			raz:import(raz.export_file_name)
 		elseif param == "export" then -- 'end' if param == 
-			raz:export()	
+			raz:export(raz.export_file_name)
+		elseif param == "convert_areas" then -- 'end' if param == 
+			raz:convert_areas()		
+		elseif param == "import_areas" then -- 'end' if param == 
+			raz:import(raz.areas_raz_export)	
 		elseif param ~= "" then -- 'end' if param == 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
 		end -- end if param == 

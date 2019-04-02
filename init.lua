@@ -37,6 +37,7 @@ raz = {
 	-- 			choke: reduce breath over time
 	-- 			evil: steals blood, breath (and food) over time
 	--	+ 	parent: if the region is marked as parent, other can set a region in that region.
+	--			default: false
 	--			e.g. the admin marks a city, the player can build houses in the city.
 	--			special flags:
 	--			protected: 	protected by admin, the player can mark a region, that region is protected for the player owner, he can not remove protected
@@ -80,6 +81,8 @@ raz = {
 	-- the filename for AreaStore
 	store_file_name = "raz_store.dat",
 	export_file_name ="raz_export.dat",
+	areas_file = "areas.dat",
+	areas_raz_export = "areas_raz_export.dat",
 
 	regions = {},
 
@@ -129,7 +132,9 @@ dofile(raz.modpath.."/raz_func.lua")
 dofile(raz.modpath.."/effect_func.lua")
 dofile(raz.modpath.."/hud.lua")
 dofile(raz.modpath.."/minetest_func.lua")
+dofile(raz.modpath.."/convert.lua")
 dofile(raz.modpath.."/privs_command.lua")
+
 
 
 minetest.log("action", "[" .. raz.modname .. "] successfully loaded .lua!")
