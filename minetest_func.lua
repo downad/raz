@@ -1,5 +1,6 @@
 -- Show a message to protection violators
 minetest.register_on_protection_violation(function(pos, name)
+	-- only owners can interact
 	if not raz:can_interact(pos, name) then
 		local pos_string = minetest.pos_to_string(pos)
 		local owners = raz:get_node_owners(pos)
@@ -86,14 +87,12 @@ end
 -- Checks if the area is unprotected or owned by you
 -- return true - if the area is unprotected
 function raz:can_interact(pos, name)
-
-
 	local owners = raz:get_node_owners(pos)
 	-- no one can interact
 	local can_interact = false
 
 	-- the owners-table is empty
-	-- this means so owner, so
+	-- this means no owner, 
 	-- can_interact = true
 	if type(next(owners)) == "nil" then
 		can_interact = true

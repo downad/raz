@@ -26,24 +26,20 @@ end
 -- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
 -- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
 --	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["parent"] = false}
-function raz:export()
+function raz:export(export_file_name)
 	local counter = 0
-	local file_name = raz.worlddir .."/".. raz.export_file_name
+	local file_name = raz.worlddir .."/".. export_file_name --raz.export_file_name
 	local file
 	local err
-	-- if the file does not exist, create the file
-	if raz:file_exists(file_name) == true then
+
+	-- open/create a new file for the export
+	file, err = io.open(file_name, "w")
+	if err then	
 		minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file_name) :"..tostring(raz:file_exists(file_name))) 
-		minetest.log("error", "[" .. raz.modname .. "] raz:file_exists(file_name) :"..file_name.." does exist!") 
-	else
-		file, err = io.open(file_name, "w")
-		if err then	
-			minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file_name) :"..tostring(raz:file_exists(file_name))) 
-			minetest.log("error", "[" .. raz.modname .. "] file, err = io.open(file_name, w) ERROR :"..err) 
-			return err
-		end
-		io.close(file)
-	end	
+		minetest.log("error", "[" .. raz.modname .. "] file, err = io.open(file_name, w) ERROR :"..err) 
+		return err
+	end
+	io.close(file)
 	
 	-- open file for append
 	file = io.open(file_name, "a")
@@ -69,14 +65,14 @@ end
 
 
 -- Load the exported AreaStore table from the save file
-function raz:import()
+function raz:import(import_file_name)
 	local counter = 1
 	local pos1 
 	local pos2
 	local data
 
 	-- does the file exist?
-	local file = raz.worlddir .."/".. raz.export_file_name
+	local file = raz.worlddir .."/"..import_file_name --raz.export_file_name
 	minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
 	if raz:file_exists(file) ~= true then
 		minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
@@ -170,10 +166,16 @@ end
 -- data = "return {[\"owner\"] = \"adownad\", [\"protected\"] = true, [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\", [\"region_name\"] = \"Meine Wiese mit Haus\"}
 -- owner and region_name are MUST
 -- if the rest is missing default will set.
-function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent)
+function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent,do_not_check_player)
 	-- check input-values
+--	local player --= minetest.get_player_by_name(owner)
+	--if minetest.get_player_by_name(owner) == nil then -- not player then
+	--	owner = minetest.setting_get("name")
+--	else
+--		player = minetest.get_player_by_name(owner)
+	--end
 	local player = minetest.get_player_by_name(owner)
-	if not player then
+	if not player and do_not_check_player ~= true then
 		owner = minetest.setting_get("name")
 	end
 	if not type(region_name) == "string" then
