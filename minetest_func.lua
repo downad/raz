@@ -45,10 +45,13 @@ function raz:get_node_owners(pos)
 end
 
 -- Return true if the region is protected
--- and name <> owner of protected area
+-- false if name == owner of protected region
+-- false if name is guest of protected region
 function raz:protected_for_name(pos, name)
 	local owners = {}
+	-- the region is not protected
 	local protected = false
+
 	-- loop all regions
 	for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
 		if regions_id then
@@ -56,14 +59,21 @@ function raz:protected_for_name(pos, name)
 			local data_table = raz:get_region_datatable(regions_id)
 			local owner = data_table.owner
 			local is_protected = data_table.protected
-			-- is name = owner and set the protected 
-			if name == owner and is_protected == true then
-				return false
-			end
+			local guests = data_table.guests
+
 			-- if the region is protected (one of the region in an region) then the hole region is protected
 			if is_protected == true then
 				protected = true
 			end
+
+			-- if name == owner and set the protected 
+			if name == owner and is_protected == true then
+				return false
+			end
+			if raz:name_is_guest(name, guests) and is_protected == true then
+				return false
+			end
+
 		end
 	end
 	return protected
@@ -73,6 +83,7 @@ end
 -- the function can_interact must return true or false
 -- return true: yes this region is protected
 -- return false: no this region is not protecred
+-- the function is_guest must return true
 local old_is_protected = minetest.is_protected
 function minetest.is_protected(pos, name)
 	-- check if pos is in a protected area
@@ -84,8 +95,8 @@ function minetest.is_protected(pos, name)
 end
 
 
--- Checks if the area is unprotected or owned by you
--- return true - if the area is unprotected
+-- Checks if the position is unprotected or owned by you
+-- return true - if *name* can interact at this *position*
 function raz:can_interact(pos, name)
 	local owners = raz:get_node_owners(pos)
 	-- no one can interact
@@ -123,6 +134,26 @@ function raz:can_interact(pos, name)
 	return can_interact	
 end
 
+
+-- check if name is in the string guests
+-- return true if the name is
+-- return false if not
+function raz:name_is_guest(name,guests_string)
+	local guests = string.split(guests_string, ",")
+	for k,v in ipairs(guests) do
+		minetest.log("action", "[" .. raz.modname .. "] name_is_guest: k: "..tostring(k).." v: "..tostring(v))
+	end
+	local is_guest = raz:check_name_in_table(name, guests)
+	return is_guest
+end
+
+
+
+
+
+-- check if a name is in an table
+-- return true if the name is in the table
+-- return false if not
 function raz:check_name_in_table(name, table)
   for i,v in ipairs(table) do
 

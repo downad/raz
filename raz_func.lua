@@ -166,14 +166,9 @@ end
 -- data = "return {[\"owner\"] = \"adownad\", [\"protected\"] = true, [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\", [\"region_name\"] = \"Meine Wiese mit Haus\"}
 -- owner and region_name are MUST
 -- if the rest is missing default will set.
+-- the flag -do_not_check_player = true allows to create regions for owners who are not player - maybe because you will convert an areas.dat for an other system.
 function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent,do_not_check_player)
 	-- check input-values
---	local player --= minetest.get_player_by_name(owner)
-	--if minetest.get_player_by_name(owner) == nil then -- not player then
-	--	owner = minetest.setting_get("name")
---	else
---		player = minetest.get_player_by_name(owner)
-	--end
 	local player = minetest.get_player_by_name(owner)
 	if not player and do_not_check_player ~= true then
 		owner = minetest.setting_get("name")
