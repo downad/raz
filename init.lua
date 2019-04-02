@@ -19,7 +19,10 @@ raz = {
 	--	+	protected: is region protected?
 	--			default: false	
 	-- 			true: only owner and guest can 'dig' in the region
+	--			true: if the parent region is protected, then owners region must be procted
 	--	+	guest:	players who can 'dig' in the raz. thy can not modify the region		
+	--			default: ""
+	--			someone is guest in an region if he is guest in that region or he is guest in the parent region
 	-- 	+	PvP: is PvP allowed in this region? (global PvP must be enable)
 	--			default: false
 	-- 			true: PvP is allowed in the region - players can damage other players
