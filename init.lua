@@ -87,8 +87,6 @@ raz = {
 	areas_file = "areas.dat",
 	areas_raz_export = "areas_raz_export.dat",
 
-	regions = {},
-
 	-- init saved huds 
 	player_huds = {},
 	-- som color for the hud
@@ -125,6 +123,10 @@ raz = {
 	-- default: true 
 	pvp_only_in_pvp_regions = minetest.settings:get_bool('pvp_only_in_pvp_regions', true),
 
+
+	regions = {}, --WHY
+
+	-- defined Errortextes
 	error_text = { 
 		[1] = "No region with this ID! func: raz:delete_region(id)",
 		[2] = "No region with this ID! func: raz:region_set_parent(id,bool)",

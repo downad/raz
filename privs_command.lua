@@ -178,12 +178,16 @@ minetest.register_chatcommand("region_special", {
 				minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
 			elseif value[2] == "+" or value[2] == true then
 				err = raz:region_set_parent(value[1],true)
-				minetest.chat_send_player(name, err)s
-				if type(err) = "number" then
+				minetest.chat_send_player(name, err)
+				if type(err) == "number" then
 					raz:error_handling(err) -- error handling
 				end
 			elseif value[2] == "-" or value[2] == false then 
-				minetest.chat_send_player(name,raz:region_set_parent(value[1],false))
+				err = raz:region_set_parent(value[1],false)
+				minetest.chat_send_player(name, err)
+				if type(err) == "number" then
+					raz:error_handling(err) -- error handling
+				end
 			end
 		elseif param == "import" then -- 'end' if param == 
 			raz:import(raz.export_file_name)
