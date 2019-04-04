@@ -12,8 +12,9 @@ a mod to do them all
 - create zones for PvP {Player vs. Player}
 - prevent damage for player in cities {Mobdamage vs. Player - MvP}
 - give areas an effect like 
-|effect| description |
-|-----|-----|
+
+|effect| description | |
+|-----|-----|-----|
 |hot| heal over time
 |bot | restore breath over time
 holy | both: heal an breath over time 
@@ -63,5 +64,7 @@ region_special *parms* | *parent* | mark an region as parent, so other regions c
 | | *export* | export all region to raz.export_file_name 
 | | *convert_areas* | read existing areas.dat - create an raz.areas_raz_export file for import 
 | | *import_areas* | import the file: raz.areas_raz_export
+
+
 
 
