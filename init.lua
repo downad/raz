@@ -125,6 +125,20 @@ raz = {
 	-- default: true 
 	pvp_only_in_pvp_regions = minetest.settings:get_bool('pvp_only_in_pvp_regions', true),
 
+	error_text = { 
+		[1] = "No region with this ID! func: raz:delete_region(id)",
+		[2] = "No region with this ID! func: raz:region_set_parent(id,bool)",
+		[3] = "No region with this ID! func: raz:get_region_data_by_id(id,no_deserialize)",
+		[4] = "No region with this ID! func: ",
+		[5] = "No region with this ID! func: ",
+		[6] = "No region with this ID! func: ",
+		[7] = "No region with this ID! func: ",
+		[8] = "No region with this ID! func: ",
+		[9] = "No region with this ID! func: ",
+		[10] = "No region with this ID! func: ",
+		[11] = "No region with this ID! func: ",
+		[12] = "No region with this ID! func: ",
+	},
 
 }
 
