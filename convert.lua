@@ -1,11 +1,9 @@
 -- convert areas to raz
 -- read the areas file
 -- export it to areas_raz_export
-
 -- Load the areas table from the save file
 function raz:convert_areas()
 	local areas = {}
-	--areas =  {}
 	local file = raz.worlddir .."/".. raz.areas_file
 	-- does the file exist?
 	if raz:file_exists(file) ~= true then

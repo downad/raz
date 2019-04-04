@@ -118,7 +118,12 @@ minetest.register_chatcommand("region_mark", {
 
 			end
 		elseif param:sub(1, 6) == "remove" then -- 'end' if param == 
-			local n = tonumber(param:sub(8, -1))
+			local id = tonumber(param:sub(8, -1))
+			if id ~= nil then
+				if raz.raz_store:get_area(id) then
+					raz:delete_region(id)
+				end
+			end
 --[[
 			if n and pvp_raz_store:get_area(n) then
 				pvp_raz_store:remove_area(n)
@@ -151,19 +156,51 @@ minetest.register_chatcommand("region_mark", {
 
 minetest.register_chatcommand("region_special", {
 	description = "some specials for the region-mod - needs region_admin privs!",
-	params = "<parent> <import> <export> <convert_areas> <import_areas>",
+	params = "<show> <parent> <import> <export> <convert_areas> <import_areas>",
 	privs = "region_admin",
 	func = function(name, param)
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
-		if param == "parent" then
+		local err = ""
+		if param:sub(1, 4) == "show" then
+			local numbers = string.split(param:sub(6, -1), "-")
+			--minetest.log("action", "[" .. raz.modname .. "] command: region_special show: "..tostring(param:sub(6, -1)))
+			--minetest.log("action", "[" .. raz.modname .. "] command: region_special show: "..minetest.serialize(numbers))
+			--minetest.log("action", "[" .. raz.modname .. "] command: region_special show: "..tostring(numbers[1]).." - "..tostring(numbers[2]))
+
+			if numbers[1] == nil then		
+				raz:region_show(name,0,0)
+			else
+				raz:region_show(name,tonumber(numbers[1]),tonumber(numbers[2]))
+			end
+		elseif param:sub(1, 6) == "parent" then
+			local value = string.split(param:sub(7, -1), " ") --string.trim(param:sub(7, -1))
+			if value[1] == nil then
+				minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
+			elseif value[2] == "+" or value[2] == true then
+				err = raz:region_set_parent(value[1],true)
+				minetest.chat_send_player(name, err)
+				if type(err) == "number" then
+					raz:error_handling(err) -- error handling
+				end
+			elseif value[2] == "-" or value[2] == false then 
+				err = raz:region_set_parent(value[1],false)
+				minetest.chat_send_player(name, err)
+				if type(err) == "number" then
+					raz:error_handling(err) -- error handling
+				end
+			end
 		elseif param == "import" then -- 'end' if param == 
 			raz:import(raz.export_file_name)
+			raz:error_handling(err) -- error handling
 		elseif param == "export" then -- 'end' if param == 
-			raz:export(raz.export_file_name)
+			err = raz:export(raz.export_file_name)
+			raz:error_handling(err) -- error handling
 		elseif param == "convert_areas" then -- 'end' if param == 
 			raz:convert_areas()		
+			raz:error_handling(err) -- error handling
 		elseif param == "import_areas" then -- 'end' if param == 
 			raz:import(raz.areas_raz_export)	
+			raz:error_handling(err) -- error handling
 		elseif param ~= "" then -- 'end' if param == 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
 		end -- end if param == 
