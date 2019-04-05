@@ -1,5 +1,5 @@
 
---globalstep
+-- register globalstep
 -- find the region from player position -> get_areas_for_pos
 -- create a string with region-name and owner an show it in the hud
 -- if there is an effect in the area - do it to the player
@@ -16,11 +16,11 @@ minetest.register_globalstep(function(dtime)
 								
 
 		-- all pos without any region are wilderness
-		local hud_stringtext = "wilderness"
+		local hud_stringtext = "" --"wilderness"
 		if raz.pvp_only_in_pvp_regions then
-			hud_stringtext = "wilderness"
+			hud_stringtext = raz.default.hud_stringtext
 		elseif raz.enable_pvp then	
-			hud_stringtext = "wilderness (PvP)"
+			hud_stringtext = raz.default.hud_stringtext_pvp
 			PvP = true
 		end
 
