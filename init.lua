@@ -58,10 +58,15 @@ raz = {
 		MvP = true,
 		effect = "none",
 		parent = false,
+		-- if 'digging in an protected region damage the player
+		-- default: true
+		do_damage_for_violation = true ,
  		-- the damage a player get for 'digging' in a protected region
 		damage_on_protection_violation = 4,
 		-- this is shown in hud if you are in an unmarked region
 		wilderness = "You are in the wilderness!",
+		hud_stringtext = "wilderness",
+		hud_stringtext_pvp = "wilderness (PvP)",
 	},
 
 	-- soem values for the region effects
@@ -127,14 +132,17 @@ raz = {
 	regions = {}, --WHY
 
 	-- defined Errortextes
+	-- the functions 
+	-- return = or an value -> NO ERROR
+	-- return err or an number > 1 to show the error_text[number]
 	error_text = { 
-		[1] = "No region with this ID! func: raz:delete_region(id)",
-		[2] = "No region with this ID! func: raz:region_set_parent(id,bool)",
-		[3] = "No region with this ID! func: raz:get_region_data_by_id(id,no_deserialize)",
-		[4] = "No region with this ID! func: ",
-		[5] = "No region with this ID! func: ",
-		[6] = "No region with this ID! func: ",
-		[7] = "No region with this ID! func: ",
+		[1] = "ERROR: No region with this ID! func: raz:delete_region(id)",
+		[2] = "ERROR: No region with this ID! func: raz:region_set_parent(id,bool)",
+		[3] = "ERROR: No region with this ID! func: raz:get_region_data_by_id(id,no_deserialize)",
+		[4] = "ERROR: File does not exist! func: raz:convert_areas() - File: "..minetest.get_worldpath() .."/areas.dat (if not changed)",
+		[5] = "Success: areas.dat successfully exported! func: raz:convert_areas()",
+		[6] = "ERROR: File does not exist! func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
+		[7] = "ERROR: in update_regions_data! func: raz:region_set_parent(id,bool)",
 		[8] = "No region with this ID! func: ",
 		[9] = "No region with this ID! func: ",
 		[10] = "No region with this ID! func: ",
@@ -145,24 +153,33 @@ raz = {
 }
 
 -- load some other .luas
-dofile(raz.modpath.."/logger.lua")
-dofile(raz.modpath.."/globalstep.lua")
-dofile(raz.modpath.."/raz_func.lua")
-dofile(raz.modpath.."/effect_func.lua")
-dofile(raz.modpath.."/hud.lua")
-dofile(raz.modpath.."/minetest_func.lua")
-dofile(raz.modpath.."/convert.lua")
-dofile(raz.modpath.."/privs_command.lua")
+--WHY?
+dofile(raz.modpath.."/logger.lua") 			-- errorhandling: nothing to do
+
+-- the functions for this mod
+dofile(raz.modpath.."/raz_func.lua")		-- errorhandling: done
+-- init globalstep
+dofile(raz.modpath.."/globalstep.lua") 		-- errorhandling: nothing to do
+dofile(raz.modpath.."/effect_func.lua")		-- errorhandling: nothing to do
+dofile(raz.modpath.."/hud.lua")				-- errorhandling: nothing to do
+dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: nothing to do
+dofile(raz.modpath.."/convert.lua")			-- errorhandling: nothing to do
+dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	
 
 
 
 minetest.log("action", "[" .. raz.modname .. "] successfully loaded .lua!")
 
-
+local err
 -- load regions form file
-raz:load_regions_from_file()
+err = raz:load_regions_from_file()
+minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file: -"..err)
+
+
+--WHY?
 -- update raz.regions
-raz:update_regions()
+err = raz:update_regions()
+minetest.log("action", "[" .. raz.modname .. "] raz:update_regions: -"..err)
 
 
 --for debuging an exercises :)

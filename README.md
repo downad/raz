@@ -27,7 +27,7 @@ evil | both: damage and choke over time
 - v 0.2	- placing regions, zones by hand and these commands: region_mark pos1, region_mark pos2, region_mark set **region_name**
 - v 0.3 - adding the effects, a base protection
 - v 0.4 - export and import regions, convert and import areas from mod areas!
-- v 0.5	- guest-status works, commands region_set *params* build
+- v 0.5	- guest-status works, commands region_set *params* 
 
 roadmap
 	- PvP, MvP flag
@@ -59,11 +59,11 @@ region_form *params* | *MvP* **true/false** | can enable or disable that Mobs ca
 | | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...  
 region_special *parms* | *parent* | mark an region as parent, so other regions can be placed in that region | privileg - region_admin
 | | *show* **1 - 3** | shows a list of all values from regions-data in the range **Start** **-** **End**. If only **Start** is given than it shows region **Start**
-| | *parent* **+** or **-** | enable / disable the parent-flag of an region 
 | | *import* | import raz.export_file_name |
 | | *export* | export all region to raz.export_file_name 
 | | *convert_areas* | read existing areas.dat - create an raz.areas_raz_export file for import 
 | | *import_areas* | import the file: raz.areas_raz_export
+| | *parent* **+** or **-** | enable / disable the parent-flag of an region 
 
 
 

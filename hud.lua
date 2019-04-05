@@ -1,17 +1,12 @@
 
 function raz:update_hud(player, hud_stringtext, color)
     local name = player:get_player_name()
-	--minetest.log("action", "[" .. raz.modname .. "] playername: "..tostring(name))
     local ids = raz.player_huds[name]
-	--minetest.log("action", "[" .. raz.modname .. "] ids: "..tostring(ids))
     if ids then
-		--minetest.log("action", "[" .. raz.modname .. "] ids in if: "..tostring(ids))
 		player:hud_change(ids, "text", hud_stringtext)
 		player:hud_change(ids, "number", color)
-		--minetest.chat_send_player(name, "update HuD")	
     else
         ids = {}
-		--minetest.log("action", "[" .. raz.modname .. "] ids in else: "..tostring(ids))
         ids = player:hud_add({
 				hud_elem_type = "text",
 				name = "Areas",
@@ -25,13 +20,15 @@ function raz:update_hud(player, hud_stringtext, color)
 				alignment = {x=1, y=-1},
 			})
 		raz.player_huds[name] = ids
-		--minetest.chat_send_player(name, hud_stringtext)	
     end
 end
 
+-- when a player joins the game
+minetest.register_on_joinplayer(function(player)
+    raz:update_hud(player, raz.default.hud_stringtext, raz.color.white)
+end)
 
---minetest.register_on_joinplayer(create_hud)
-
+-- when player leaves the game
 minetest.register_on_leaveplayer(function(player)
     raz.player_huds[player:get_player_name()] = nil
 end)

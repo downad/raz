@@ -1,15 +1,17 @@
 -- convert areas to raz
--- read the areas file
--- export it to areas_raz_export
 -- Load the areas table from the save file
+-- convert them to the converted_areas table
+-- call the function: raz:areas_export(raz.areas_raz_export,converted_areas) to export the table
+-- return 4 - file did not exist
+-- return err - from io.open
+-- return the returnvalue from raz:areas_export(raz.areas_raz_export,converted_areas)
 function raz:convert_areas()
 	local areas = {}
 	local file = raz.worlddir .."/".. raz.areas_file
 	-- does the file exist?
 	if raz:file_exists(file) ~= true then
-		minetest.log("action", "[" .. raz.modname .. "] raz:load_areas() - file exist :"..tostring(raz:file_exists(file))) 
-		minetest.log("error", "[" .. raz.modname .. "] raz:file_exists(file) :"..file.." does not exist!") 
-		return
+		-- minetest.log("error", "[" .. raz.modname .. "] raz:file_exists(file) :"..file.." does not exist!") 
+		return 4
 	end
 
 	local areas_file, err = io.open(file, "r")
@@ -124,7 +126,7 @@ function raz:convert_areas()
 
 			end -- if converted_areas[id] == nil then
 		else -- if area.parent == nil then
-		-- an parent is set -
+		-- an parent is set
 		-- that means the owner is guest in an other area
 		-- the converted_areas[parent]
 			-- initialize converted_areas[id]
@@ -252,20 +254,19 @@ function raz:convert_areas()
 	end -- for id, area in pairs(areas) do
 
 
---	for k,v in pairs(converted_areas) do
---			minetest.log("action", "[" .. raz.modname .. "] raz:load_areas() - k = "..tostring(k)) 
---			minetest.log("action", "[" .. raz.modname .. "] raz:load_areas() - v = "..tostring(minetest.serialize(v))) 
---			minetest.log("action", "[" .. raz.modname .. "] raz:load_areas() - v.pos1 = "..tostring(minetest.serialize(v.pos1))) 
---	end
-	raz:areas_export(raz.areas_raz_export,converted_areas)
+	-- export the converted_areas to file
+	return raz:areas_export(raz.areas_raz_export,converted_areas)
+
 end
 
 
 -- Export the AreaStore table to a file
 -- the export-file has this format, 3 lines: [min/pos1], [max/pos2], [data]
--- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
--- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
---	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["parent"] = false}
+	-- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
+	-- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
+	--	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["parent"] = false}
+-- return 0 - no error
+-- return err from io.open
 function raz:areas_export(export_file_name, converted_areas)
 	local counter = 0
 	local file_name = raz.worlddir .."/".. export_file_name 
@@ -274,6 +275,7 @@ function raz:areas_export(export_file_name, converted_areas)
 	-- open/create a new file for the export
 	file, err = io.open(file_name, "w")
 	if err then	
+		minetest.log("action", "[" .. raz.modname .. "] raz:areas_export(export_file_name, converted_areas)")
 		minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file_name) :"..tostring(raz:file_exists(file_name))) 
 		minetest.log("error", "[" .. raz.modname .. "] file, err = io.open(file_name, w) ERROR :"..err) 
 		return err
@@ -281,12 +283,13 @@ function raz:areas_export(export_file_name, converted_areas)
 	io.close(file)
 	
 	-- open file for append
-	file = io.open(file_name, "a")
+	file, err = io.open(file_name, "a")
 	if err then	
+		minetest.log("action", "[" .. raz.modname .. "] raz:areas_export(export_file_name, converted_areas)")
 		minetest.log("error", "[" .. raz.modname .. "] file, err = io.open(file_name, a) ERROR :"..tostring(err)) 
 		return err
-	else
-		minetest.log("action", "[" .. raz.modname .. "] file, err = io.open(file_name, a) opend file :"..tostring(err)) 
+	--else
+	--	minetest.log("action", "[" .. raz.modname .. "] file, err = io.open(file_name, a) opend file :"..tostring(err)) 
 	end
 	local owner = ""
 	local region_name = ""
@@ -316,5 +319,6 @@ function raz:areas_export(export_file_name, converted_areas)
 		file:write(data.."\n")
 	end
 	file:close()
+	return 5 -- successfully exported
 end
 
