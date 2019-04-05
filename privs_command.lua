@@ -7,10 +7,12 @@ minetest.register_privilege("region_lv2", "Can set, remove, protect own regions.
 minetest.register_privilege("region_lv1", "Can set, remove own regions.")
 
 
+-- commands for all player
+-- command: 'region status' lists detais for the region the player is in.
 minetest.register_chatcommand("region", {
 	description = "Show a list of this regions with all data.",
 	params = "<status>",
-	--privs = "", -- no spezial parov
+	privs = "interact", -- no spezial priv
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
 		local pos = vector.round(player:getpos())
@@ -77,12 +79,18 @@ minetest.register_chatcommand("region", {
 })
 
 
--- use max size, kontrolliere, dss region nicht mit anderen regionen überlappt, nun eigen regionen in regionen 
+-- command for player with privileg region_lv1
+-- this command allows to set an area.
+-- go to one edge and call the command 'region_mark pos1'
+-- go to the second edge an call the command 'region_mark pos2'
+-- call 'region_mark set' with the name for the region
+-- player can also remove his regions
 minetest.register_chatcommand("region_mark", {
 	description = "Mark, set and remove regions.",
 	params = "<pos1> <pos2> <set> <remove>",
 	privs = "region_lv1",
 	func = function(name, param)
+		raz:command_region_mark(name,param)
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
 		if param == "pos1" then
 			if not raz.command_players[name] then
@@ -115,63 +123,66 @@ minetest.register_chatcommand("region_mark", {
 					minetest.chat_send_player(name, "Region with the name >"..region_name.."< set!")
 				end
 				raz.command_players[name] = nil
-
 			end
 		elseif param:sub(1, 6) == "remove" then -- 'end' if param == 
 			local id = tonumber(param:sub(8, -1))
 			if id ~= nil then
 				if raz.raz_store:get_area(id) then
-					raz:delete_region(id)
+					local data_table = raz:get_region_datatable(id)
+					if name == data_table.owner then
+						raz:delete_region(id)
+					else
+						minetest.chat_send_player(name, "You are not the owner of the region with the ID: "..tostring(id).."!")
+					end
 				end
-			end
---[[
-			if n and pvp_raz_store:get_area(n) then
-				pvp_raz_store:remove_area(n)
-				if pvp_raz_store:get_area(n + 1) then
-					-- Insert last entry in new empty (removed) slot.
-					local a = pvp_raz_store:get_area(#pvp_areas - 1)
-					pvp_raz_store:remove_area(#pvp_areas - 1)
-					pvp_raz_store:insert_area(a.min, a.max, "pvp_areas", n)
-				end
-				update_pvp_areas()
-				save_pvp_areas()
-				minetest.chat_send_player(name, "Removed " .. tostring(n))
 			else
-				minetest.chat_send_player(name, "Invalid argument.  You must enter a valid area identifier.")
+				minetest.chat_send_player(name, "Region with the ID: "..tostring(id).." unknown!")
 			end
-]]--
 		elseif param ~= "" then -- 'end' if param == 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help mark_region\" for more information.")
---[[		else
-			for k, v in pairs(pvp_areas) do
-				minetest.chat_send_player(name, k - 1 .. ": " ..
-						minetest.pos_to_string(v.min) .. " " ..
-						minetest.pos_to_string(v.max))
-			end
-]]--
 		end -- 'end' if param == 
 	end -- end func = function(name, param)
+
 })
 
 
+-- commands for the region_admin
+-- command: 'region_special show' lists all region 
+--			'region_special show 3' shows only the region with the id 3
+--			'region_special show 3-5' shows all regions from id 3 to id 5
+-- command: 'region_special export' exports the AreaStore() to file
+-- command: 'region_special import' imports a exported file
+-- command: 'region_special convert_areas' conversts an area.dat file and exports it 
+-- command: 'region_special import_areas' imports the exported area.dat file
+	
 minetest.register_chatcommand("region_special", {
 	description = "some specials for the region-mod - needs region_admin privs!",
-	params = "<show> <parent> <import> <export> <convert_areas> <import_areas>",
+	params = "<show> <import> <export> <convert_areas> <import_areas> <parent>",
 	privs = "region_admin",
 	func = function(name, param)
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
 		local err = ""
 		if param:sub(1, 4) == "show" then
 			local numbers = string.split(param:sub(6, -1), "-")
-			--minetest.log("action", "[" .. raz.modname .. "] command: region_special show: "..tostring(param:sub(6, -1)))
-			--minetest.log("action", "[" .. raz.modname .. "] command: region_special show: "..minetest.serialize(numbers))
-			--minetest.log("action", "[" .. raz.modname .. "] command: region_special show: "..tostring(numbers[1]).." - "..tostring(numbers[2]))
-
 			if numbers[1] == nil then		
-				raz:region_show(name,0,0)
+				err = raz:region_show(name,0,0)
 			else
-				raz:region_show(name,tonumber(numbers[1]),tonumber(numbers[2]))
+				-- if numbers only contains strings then tonumber become 0 - no error_handling
+				err = raz:region_show(name,tonumber(numbers[1]),tonumber(numbers[2]))
 			end
+			raz:error_handling(err) 			-- error handling
+		elseif param == "export" then -- 'end' if param == 
+			err = raz:export(raz.export_file_name)
+			raz:error_handling(err) 			-- error handling
+		elseif param == "import" then -- 'end' if param == 
+			raz:import(raz.export_file_name)
+			raz:error_handling(err) 			-- error handling
+		elseif param == "convert_areas" then -- 'end' if param == 
+			raz:convert_areas()		
+			raz:error_handling(err) -- error handling
+		elseif param == "import_areas" then -- 'end' if param == 
+			raz:import(raz.areas_raz_export)	
+			raz:error_handling(err) -- error handling
 		elseif param:sub(1, 6) == "parent" then
 			local value = string.split(param:sub(7, -1), " ") --string.trim(param:sub(7, -1))
 			if value[1] == nil then
@@ -189,18 +200,6 @@ minetest.register_chatcommand("region_special", {
 					raz:error_handling(err) -- error handling
 				end
 			end
-		elseif param == "import" then -- 'end' if param == 
-			raz:import(raz.export_file_name)
-			raz:error_handling(err) -- error handling
-		elseif param == "export" then -- 'end' if param == 
-			err = raz:export(raz.export_file_name)
-			raz:error_handling(err) -- error handling
-		elseif param == "convert_areas" then -- 'end' if param == 
-			raz:convert_areas()		
-			raz:error_handling(err) -- error handling
-		elseif param == "import_areas" then -- 'end' if param == 
-			raz:import(raz.areas_raz_export)	
-			raz:error_handling(err) -- error handling
 		elseif param ~= "" then -- 'end' if param == 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
 		end -- end if param == 

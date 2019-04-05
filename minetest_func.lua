@@ -1,3 +1,4 @@
+
 -- Show a message to protection violators
 minetest.register_on_protection_violation(function(pos, name)
 	-- only owners can interact
@@ -12,12 +13,17 @@ minetest.register_on_protection_violation(function(pos, name)
 	end
 end)
  
+-- 
 --Damage protection violators
 minetest.register_on_protection_violation(function(pos, name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return end
-	player:set_hp(math.max(player:get_hp() - raz.default.damage_on_protection_violation, 0))
-	minetest.chat_send_player(name, "This area is protected! -"..raz.default.damage_on_protection_violation.." HP")
+	if raz.dafault.do_damage_for_violation then 
+		player:set_hp(math.max(player:get_hp() - raz.default.damage_on_protection_violation, 0))
+		minetest.chat_send_player(name, "This area is protected! -"..raz.default.damage_on_protection_violation.." HP")
+	else
+		minetest.chat_send_player(name, "This area is protected!")
+	end
 end)
 
 
@@ -36,8 +42,7 @@ function raz:get_node_owners(pos)
 					minetest.log("action", "[" .. raz.modname .. "] raz:check_name_in_table(owner, owners) == false" )
 					table.insert(owners, owner)	
 				else
-					minetest.log("action", "[" .. raz.modname .. "] raz:check_name_in_table(owner, owners) == true" )
-		
+					minetest.log("action", "[" .. raz.modname .. "] raz:check_name_in_table(owner, owners) == true" )	
 				end	
 			end
 		end
@@ -70,7 +75,7 @@ function raz:protected_for_name(pos, name)
 			if name == owner and is_protected == true then
 				return false
 			end
-			if raz:name_is_guest(name, guests) and is_protected == true then
+			if raz:player_is_guest(name, guests) and is_protected == true then
 				return false
 			end
 
@@ -138,12 +143,14 @@ end
 -- check if name is in the string guests
 -- return true if the name is
 -- return false if not
-function raz:name_is_guest(name,guests_string)
-	local guests = string.split(guests_string, ",")
-	for k,v in ipairs(guests) do
-		minetest.log("action", "[" .. raz.modname .. "] name_is_guest: k: "..tostring(k).." v: "..tostring(v))
-	end
-	local is_guest = raz:check_name_in_table(name, guests)
+function raz:player_is_guest(name,guests_string)
+	-- convert guest_sting in guest_table
+	local guests_table = string.split(guests_string, ",")
+	-- only for debug
+	--for k,v in ipairs(guests) do
+	--	minetest.log("action", "[" .. raz.modname .. "] player_is_guest: k: "..tostring(k).." v: "..tostring(v))
+	--end
+	local is_guest = raz:check_name_in_table(name, guests_table)
 	return is_guest
 end
 

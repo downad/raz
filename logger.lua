@@ -1,3 +1,5 @@
+-- no errorhandling
+
 
 -- some Logs
 minetest.log("action", "[" .. raz.modname .. "] ##########################################################")

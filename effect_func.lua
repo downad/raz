@@ -29,9 +29,9 @@ function raz:do_effect_to_player(player,effects)
 			evil_done = raz:do_effect_evil(player)
 		end
 	end
-
 end
--- deal the effect
+
+-- deal the effects
 -- hot - heal over time
 function raz:do_effect_hot(player)
 	if player:get_hp() < 20 then
@@ -42,6 +42,7 @@ function raz:do_effect_hot(player)
 	end
 	return true
 end
+
 -- bot - breath over time
 function raz:do_effect_bot(player)
 	if player:get_breath() < 11 then
@@ -51,6 +52,7 @@ function raz:do_effect_bot(player)
 		minetest.chat_send_player(player:get_player_name(), "Your are full of air.")
 	return true
 end
+
 -- holy - the effect of hot and bot and fot
 function raz:do_effect_holy(player)
 	local done = ""
@@ -59,18 +61,21 @@ function raz:do_effect_holy(player)
 		minetest.chat_send_player(player:get_player_name(), "This is an holy region!")
 	return true
 end
+
 -- dot - damage over time
 function raz:do_effect_dot(player)
 		player:set_hp(math.max(player:get_hp() - raz.effect.dot, 0))
 		minetest.chat_send_player(player:get_player_name(), "You get "..raz.effect.dot.." damage in this region!")
 	return true
 end
+
 -- choke
 function raz:do_effect_choke(player)
 		player:set_breath(math.max(player:get_breath() - raz.effect.choke, 0))
 		minetest.chat_send_player(player:get_player_name(), "The region steels you "..raz.effect.choke.." breath!")
 	return true
 end
+
 -- evil - the effect of dot and choke
 function raz:do_effect_evil(player)
 	local done = ""
