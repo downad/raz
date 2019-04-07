@@ -50,7 +50,7 @@ raz = {
 	--			effects: a zone with an effect can not become parent, no player can mark a region there
 	raz_store = AreaStore(),
 	region_attribute = {
-		"protect", "guest", "PvP", "MvP", "effect", "parent", 
+		"owner", "protect", "guest", "PvP", "MvP", "effect", "parent", 
 	},
 	-- some defaults for the AreaStore data
 	default = {
@@ -184,10 +184,10 @@ err = raz:load_regions_from_file()
 minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file: -"..err)
 
 
---WHY?
+--WHY raz:update_regions()?
 -- update raz.regions
-err = raz:update_regions()
-minetest.log("action", "[" .. raz.modname .. "] raz:update_regions: -"..err)
+--err = raz:update_regions()
+--minetest.log("action", "[" .. raz.modname .. "] raz:update_regions: -"..err)
 
 
 --for debuging an exercises :)

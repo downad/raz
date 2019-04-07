@@ -129,14 +129,17 @@ minetest.register_chatcommand("region_mark", {
 			if id ~= nil then
 				if raz.raz_store:get_area(id) then
 					local data_table = raz:get_region_datatable(id)
-					if name == data_table.owner then
+					if name == data_table.owner or minetest.check_player_privs(name, { region_admin = true }) then
 						raz:delete_region(id)
+						minetest.chat_send_player(name, "The region with ID: "..tostring(id).." was removed!")	
 					else
 						minetest.chat_send_player(name, "You are not the owner of the region with the ID: "..tostring(id).."!")
 					end
+				else
+					minetest.chat_send_player(name, "There is no region with ID: "..tostring(id).."!")					
 				end
 			else
-				minetest.chat_send_player(name, "Region with the ID: "..tostring(id).." unknown!")
+				minetest.chat_send_player(name, "Region with the ID: "..tostring(id).." is unknown!")
 			end
 		elseif param ~= "" then -- 'end' if param == 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help mark_region\" for more information.")
@@ -214,8 +217,9 @@ minetest.register_chatcommand("region_set", {
 -- command: 'region_special import_areas' imports the exported area.dat file
 -- command: 'region_special parent 3 +' marks the region id 3 with the parent attribute
 -- 			'region_special parent 3 -' removes the parent attribute	
+-- command: 'region_special change_owner <id> <new owner>' 
 minetest.register_chatcommand("region_special", {
-	description = "Some special commands for the region-admin!\n 'region_special show' lists all regions, 'region_special show 3' shows only the region with the id 3, \n'region_special show 3-5' shows all regions from id 3 to id 5.\nThe command 'region_special export' exports the AreaStore() to file, 'region_special import' imports it.\n'region_special convert_areas' conversts from ShadowNinja areas the area.dat file and exports it.\nWith 'region_special import_areas' the exported area.dat file imported.\n'region_special parent 3 +' marks the region id 3 with the parent attribute. 'region_special parent 3 -' removes it.",
+	description = "Some special commands for the region-admin!\n 'region_special show' lists all regions, 'region_special show 3' shows only the region with the id 3, \n'region_special show 3-5' shows all regions from id 3 to id 5.\nThe command 'region_special export' exports the AreaStore() to file, 'region_special import' imports it.\n'region_special convert_areas' conversts from ShadowNinja areas the area.dat file and exports it.\nWith 'region_special import_areas' the exported area.dat file imported.\n'region_special parent 3 +' marks the region id 3 with the parent attribute. 'region_special parent 3 -' removes it.\n To change an owner of an region: 'region_special change_owner <id> <new owner>' ",
 	params = "<show> <import> <export> <convert_areas> <import_areas> <parent>",
 	privs = "region_admin",
 	func = function(name, param)
@@ -247,14 +251,22 @@ minetest.register_chatcommand("region_special", {
 			raz:import(raz.areas_raz_export)	
 			raz:error_handling(err) -- error handling
 		elseif param:sub(1, 6) == "parent" then
-			local value = string.split(param:sub(7, -1), " ") --string.trim(param:sub(7, -1))
+			local value = string.split(param:sub(7, -1), " ") 
 			if value[1] == nil then
 				minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
 			elseif value[2] == "+" or value[2] == true then
-				err = raz:region_set_attribute(name, value[1], "parent", true) -- _parent(value[1],true)
+				err = raz:region_set_attribute(name, value[1], "parent", true) 
 				raz:msg_handling(err, name) --  message and error handling
 			elseif value[2] == "-" or value[2] == false then 
-				err = raz:region_set_attribute(name, value[1], "parent", false) -- _parent(value[1],false)
+				err = raz:region_set_attribute(name, value[1], "parent", false) 
+				raz:msg_handling(err, name) --  message and error handling
+			end
+		elseif param:sub(1, 12) == "change_owner" then
+			local value = string.split(param:sub(13, -1), " ") --string.trim(param:sub(7, -1))
+			if value[1] == nil or value[2] == nil then
+				minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
+			else
+				err = raz:region_set_attribute(name, value[1], "owner", value[2]) 
 				raz:msg_handling(err, name) --  message and error handling
 			end
 		elseif param ~= "" then -- 'end' if param == 
