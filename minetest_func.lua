@@ -155,16 +155,4 @@ function raz:player_is_guest(name,guests_string)
 end
 
 
--- check if a name is in an table
--- return true if the name is in the table
--- return false if not
-function raz:check_name_in_table(name, table)
-  for i,v in ipairs(table) do
 
-    if v == name then
-      return true
-    end
-
-  end
-  return false
-end
