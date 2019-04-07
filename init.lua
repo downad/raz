@@ -12,7 +12,7 @@ raz = {
 	-- here is stored the min, max and data field of an raz. The data-field is an designed string that can be derialized to a table
 	-- example:
 	-- data = "return {[\"owner\"] = \"playername\", [\"region_name\"] = \"Meine Wiese mit Haus\" , [\"protected\"] = true, 
-	--	[\"guest\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\"}"
+	--	[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\"}"
 	-- 	design:
 	-- 	+	owner: the owner of the region, he can modify the region-flags
 	--	+	region_name: the name of the region, shown e.g. in the hud
@@ -49,7 +49,9 @@ raz = {
 	--			MvP:	if the region is marked as MvP - zone the player can not remove MvP
 	--			effects: a zone with an effect can not become parent, no player can mark a region there
 	raz_store = AreaStore(),
-
+	region_attribute = {
+		"protect", "guest", "PvP", "MvP", "effect", "parent", 
+	},
 	-- some defaults for the AreaStore data
 	default = {
 		protected = false,
@@ -137,24 +139,30 @@ raz = {
 	-- return err or an number > 1 to show the error_text[number]
 	error_text = { 
 		[1] = "ERROR: No region with this ID! func: raz:delete_region(id)",
-		[2] = "ERROR: No region with this ID! func: raz:region_set_parent(id,bool)",
+		[2] = "ERROR: No region with this ID! func: raz:region_set_attribute(id,bool)",
 		[3] = "ERROR: No region with this ID! func: raz:get_region_data_by_id(id,no_deserialize)",
 		[4] = "ERROR: File does not exist! func: raz:convert_areas() - File: "..minetest.get_worldpath() .."/areas.dat (if not changed)",
 		[5] = "Success: areas.dat successfully exported! func: raz:convert_areas()",
 		[6] = "ERROR: File does not exist! func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
-		[7] = "ERROR: in update_regions_data! func: raz:region_set_parent(id,bool)",
-		[8] = "No region with this ID! func: ",
-		[9] = "No region with this ID! func: ",
-		[10] = "No region with this ID! func: ",
-		[11] = "No region with this ID! func: ",
-		[12] = "No region with this ID! func: ",
+		[7] = "ERROR: in update_regions_data! func: raz:region_set_attribute(id, region_attribute, bool)", 
+		[8] = "msg: The region_attribute did not fit!",
+		[9] = "msg: There is no Player with this name!",
+		[10] = "msg: Wrong effect!",
+		[11] = "msg: You are not the owner of this region!",
+		[12] = "msg: No Player with this name is in the guestlist!",
+		[13] = "ERROR: No Table returned func: raz:export(export_file_name)", 
+		[14] = "No region with this ID! func: ",
+		[15] = "No region with this ID! func: ",
+		[16] = "No region with this ID! func: ",
+		[17] = "No region with this ID! func: ",
+
 	},
 
 }
 
 -- load some other .luas
 --WHY?
-dofile(raz.modpath.."/logger.lua") 			-- errorhandling: nothing to do
+--dofile(raz.modpath.."/logger.lua") 			-- errorhandling: nothing to do
 
 -- the functions for this mod
 dofile(raz.modpath.."/raz_func.lua")		-- errorhandling: done
