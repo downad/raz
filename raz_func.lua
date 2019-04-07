@@ -3,7 +3,7 @@
 -- WHY?
 -- msg/error handling: no
 -- return 0 = no error
-function raz:update_regions()
+function raz:update_regions_2()
 	minetest.log("action", "[" .. raz.modname .. "] raz:update_regions() ")
 	local counter = 0
 	raz.regions = {}
@@ -13,7 +13,7 @@ function raz:update_regions()
 		minetest.log("action", "[" .. raz.modname .. "] raz:update_regions() counter :"..tostring(counter).."!!!!!") 
 		--raz:print_region_datatable_for_id(counter)
 	end
-	-- save
+	-- save changes
 	raz:save_regions_to_file()
 	-- No Error
 	return 0 
@@ -174,7 +174,8 @@ function raz:import(import_file_name)
 	 	counter = counter + 3
 	end
 	-- Save AreaStore()
-	raz:update_regions()
+--WHY raz:update_regions()?
+--	raz.update_regions()
 	raz:save_regions_to_file()
 	-- No Error
 	return 0
@@ -209,13 +210,14 @@ end
 -- msg/error handling: 
 -- return id of new region
 function raz:set_region(pos1,pos2,data)
-	minetest.log("action", "[" .. raz.modname .. "] raz:set_region(pos1,pos2,data)")	
+	--minetest.log("action", "[" .. raz.modname .. "] raz:set_region(pos1,pos2,data)")	
 	if type(data) ~= "string" then
 		data = minetest.serialize(data)
 	end
 	local id = raz.raz_store:insert_area(pos1, pos2, data)
-	minetest.log("action", "[" .. raz.modname .. "] set_region id ".. tostring(id))
-	raz.update_regions()
+	--minetest.log("action", "[" .. raz.modname .. "] set_region id ".. tostring(id))
+--WHY raz:update_regions()?
+--	raz.update_regions()
 	raz.save_regions_to_file()
 	return id
 end
@@ -332,18 +334,18 @@ function raz:region_show(name,list_start,list_end)
 			pos2 = "["..region_values.max.x..","..region_values.max.y..","..region_values.max.z.."]"
 			data = minetest.deserialize(region_values.data)
 			chat_string = chat_string.."\n"..counter.." - "..data.region_name.." {"..data.owner.."} "..pos1.." / "..pos2
-			chat_string = chat_string.." protected: "..tostring(data.protected).." Guests: "..data.guests.."\n"
+			chat_string = chat_string.."<-> protected: "..tostring(data.protected).."<-> Guests: "..data.guests.."\n"
 			if data.PvP then
-				chat_string = chat_string.." PvP "
+				chat_string = chat_string.."<-> PvP "
 			end
 			if data.MvP then
-				chat_string = chat_string.." MvP "
+				chat_string = chat_string.."<-> MvP "
 			end
 			if data.effect ~="none" then
-				chat_string = chat_string.." - " ..tostring(data.effect).." - "
+				chat_string = chat_string.." <-> " ..tostring(data.effect).." - "
 			end
 			if data.parent then
-				chat_string = chat_string.." is parent "
+				chat_string = chat_string.."<-> is parent "
 			end
 		end -- if counter <= stop_list or stop_list < 0 then
 		counter = counter + 1
@@ -356,7 +358,7 @@ end
 -- the default bool is 'nil' - this bool is used to add or remove guests 
 -- this function checks id, region_attribut and value = bool or value = string (effects - hot, bot, holy, dot, choke, evil)
 -- msg/error handling:
--- return text -- no error
+-- return info: text -- no error
 -- return 2 -- "ERROR: No region with this ID! func: raz:region_set_attribute(name, id, region_attribute, value),
 -- return 8 -- "ERROR: The region_attribute dit not fit! func: raz:region_set_attribute(name, id, region_attribute, value)",
 -- return 9 -- "ERROR: There is no Player with this name! func: raz:region_set_attribute(name, id, region_attribute, value)",
@@ -391,7 +393,15 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 		if 	region_attribute == "protect" then
 			if type(value) == "boolean" then 
 				data.protected = value 
-		end 
+			end 
+		elseif 	region_attribute == "owner" then
+			if type(value) == "string" then 
+				-- check player"
+				if not minetest.player_exists(value) then --player then
+					return 9 -- "ERROR: There is no Player with this name! func: raz:region_set_attribute(name, id, region_attribute, value)",
+				end			
+				data.owner = value
+			end 
 		elseif 	region_attribute == "guest" and bool == true then
 			if type(value) == "string" then 
 				-- check player"
@@ -404,7 +414,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 				else	
 					data.guests = data.guests..","..value 
 				end
-		end 
+			end 
 		elseif 	region_attribute == "guest" and bool == false then
 			if type(value) == "string" then 
 				-- check guests
@@ -417,7 +427,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 				-- data.guests must be an STRING!
 				local new_guest_string = raz:table_to_string(guests)
 				data.guests = new_guest_string
-		end 
+			end 
 		elseif 	region_attribute == "PvP" then
 			if type(value) == "boolean" then 
 				data.PvP = value 
@@ -448,8 +458,9 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 
 		-- raz:print_region_datatable_for_id(id)
 		-- update
-		raz:update_regions()
-		return "Region with ID: "..id.." modified attribute "..tostring(region_attribute).." with value "..tostring(value)
+--WHY raz:update_regions()?
+--	raz.update_regions()
+		return "info: Region with ID: "..id.." modified attribute "..tostring(region_attribute).." with value "..tostring(value)
 	else
 		-- Error
 		return 2 -- [2] = "No region with this ID!"
@@ -530,6 +541,10 @@ function raz:update_regions_data(id,pos1,pos2,data_table)
 		counter = counter + 1
 	end
 	temp_store = {}
+
+	-- save changes
+	raz:save_regions_to_file()
+
 	return true
 end
 
@@ -552,7 +567,12 @@ function raz:msg_handling(err, name)
 	minetest.log("action", "[" .. raz.modname .. "] name: " .. tostring(name))
 	
 	if type(err) == "string" then
-		minetest.log("error", "[" .. raz.modname .. "] Error: ".. err)	
+		-- is err an info
+		if err:sub(1, 5) == "info:" then
+			minetest.log("action", "[" .. raz.modname .. "]".. err:sub(6, -1))	
+		else 
+			minetest.log("error", "[" .. raz.modname .. "] Error: ".. err)	
+		end
 	elseif type(err) == "number" then
 		minetest.log("error", "[" .. raz.modname .. "] Error: ".. raz.error_text[err])	
 	end

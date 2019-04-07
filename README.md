@@ -24,10 +24,11 @@ evil | both: damage and choke over time
 
 ## Versions
 - v 0.1 - start of the projekt
-- v 0.2	- placing regions, zones by hand and these commands: region_mark pos1, region_mark pos2, region_mark set **region_name**
-- v 0.3 - adding the effects, a base protection
-- v 0.4 - export and import regions, convert and import areas from mod areas!
+- v 0.2	- placing regions, zones an areas by hand and these commands: region_mark pos1, region_mark pos2, region_mark set **region_name**
+- v 0.3 - adding the effects. Protection is working. protection_violation makes damage
+- v 0.4 - export and import regions to/from file, convert and import areas from ShadowNinja areas mod!
 - v 0.5	- guest-status works, commands region_set *params* 
+- v 0.6 - more commands fot modifying the attributs
 
 roadmap
 	- PvP, MvP attribute
@@ -38,7 +39,8 @@ roadmap
 
 ## Privilegs:
 + "region_admin" ==> modify all regions, import, export regions, convert areas.dat,
-+ "region_lv4" ==> Can set and remove an effect and enable/disable MvP for own regions.
++ "region_lv5" ==> Can set and remove effects for own regions.
++ "region_lv4" ==> Can enable/disable MvP for own regions.
 + "region_lv3" ==> Can enable/disable PvP for own regions.
 + "region_lv2" ==> Can enable/disable protection and invite/ban guests on own regions.
 + "region_lv1" ==> Can set and remove own regions.
@@ -57,15 +59,16 @@ region_set *params* | *protect* <id> | Protect the region with the ID (only OWN 
  | | *invite* **name** | invites player **name**. (only OWN regions) - The guest player can 'dig' and 'build' like in an own protected region.
  | | *ban* **name** | disallow the player **name** (only OWN regions) to 'dig' and 'build' like in the protected region.
 region_pvp *params* | *PvP* **true/false** | can make the zone to become an arena with PvP (globaly PvP must be enabled) | privileg - region_lv3
-region_form *params* | *MvP* **true/false** | can enable or disable that Mobs can damage the player | privileg - region_lv4
-| | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...
+region_MvP *params* | *MvP* **true/false** | can enable or disable that Mobs can damage the player | privileg - region_lv4
+region_effect *params* | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg - region_lv5
 region_special *parms* | *parent* | mark an region as parent, so other regions can be placed in that region | privileg - region_admin.
-| | *show* **1 - 3** | shows a list of all values from regions-data in the range **Start** **-** **End**. If only **Start** is given than it shows region **Start**. Without **Start** all regions are listed
-| | *import* | import raz.export_file_name |
+| | *show* **1 - 3** | shows a list of all values from regions-data in the range **start** **-** **end**. If only **start** is given it shows the region **start**. Without **start** all regions are listed.
+| | *import* | import raz.export_file_name. 
 | | *export* | export all region to raz.export_file_name.
 | | *convert_areas* | conversts from ShadowNinja areas! - read existing areas.dat - create an raz.areas_raz_export file for import.
 | | *import_areas* | import the file: raz.areas_raz_export.
 | | *parent* **+** or **-** | enable / disable the parent-attribute of an region.
+| | *change_owner* **id** **new owner** | changes the owner from an region to **new owner**.
 
 
 

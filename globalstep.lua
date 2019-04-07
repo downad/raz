@@ -27,8 +27,8 @@ minetest.register_globalstep(function(dtime)
 		-- all values of this region
 		-- region_values.min -> table of koordinates 
 		-- region_values.max -> table of koordinates
-		-- region_values.data -> string of koordinartes
-		--     there it gives region_name, owner, protected, guests, PvP, MvP, effect 
+		-- region_values.data -> string of attributes
+		--   attributes are: region_name, owner, protected, guests, PvP, MvP, effect 
 		local region_values = ""
 		
 		

@@ -18,7 +18,7 @@ end)
 minetest.register_on_protection_violation(function(pos, name)
 	local player = minetest.get_player_by_name(name)
 	if not player then return end
-	if raz.dafault.do_damage_for_violation then 
+	if raz.default.do_damage_for_violation then 
 		player:set_hp(math.max(player:get_hp() - raz.default.damage_on_protection_violation, 0))
 		minetest.chat_send_player(name, "This area is protected! -"..raz.default.damage_on_protection_violation.." HP")
 	else
@@ -53,25 +53,42 @@ end
 -- false if name == owner of protected region
 -- false if name is guest of protected region
 function raz:protected_for_name(pos, name)
-	local owners = {}
+--	local owners = {}
+	local data_table = {}		-- as table
+	local owner = ""			-- as string
+	local guests = ""			-- as sting
+	local is_protected = false	-- as boolean
+
 	-- the region is not protected
 	local protected = false
+	
 
 	-- loop all regions
+	local counter = 0
 	for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
 		if regions_id then
-			-- get area_data as table
-			local data_table = raz:get_region_datatable(regions_id)
-			local owner = data_table.owner
-			local is_protected = data_table.protected
-			local guests = data_table.guests
+			counter = counter + 1
+			-- get region_data as table
+			data_table = raz:get_region_datatable(regions_id)
+			owner = data_table.owner
+			guests = data_table.guests
+			is_protected = data_table.protected
 
-			-- if the region is protected (one of the region in an region) then the hole region is protected
+			--minetest.log("action", "[" .. raz.modname .. "] raz:protected_for_name(pos, name) name = "..name )
+			--minetest.log("action", "[" .. raz.modname .. "] type(owner) = "..type(owner) )
+			--minetest.log("action", "[" .. raz.modname .. "] type(guests) = "..type(guests) )
+			--minetest.log("action", "[" .. raz.modname .. "] type(is_protected) = "..type(is_protected) )
+
+	
+			
+			-- if the region is protected (one of the region in an region) then all regions are protected
+			-- e.g. if a garden is protected and parent and in ther is an house. The house keeper has invited a guest to build with
+			-- the invited guest can build 
 			if is_protected == true then
 				protected = true
 			end
 
-			-- if name == owner and set the protected 
+			-- if name == owner and protected == true 
 			if name == owner and is_protected == true then
 				return false
 			end
@@ -81,6 +98,10 @@ function raz:protected_for_name(pos, name)
 
 		end
 	end
+	if counter > 2 then
+		-- there are some regions at the same pos!
+		minetest.log("action", "[" .. raz.modname .. "] raz:protected_for_name(pos, name) more than 2 regions on this pos = "..minetest.serialize(pos) )
+	end	
 	return protected
 end
 
