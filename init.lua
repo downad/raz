@@ -26,9 +26,14 @@ raz = {
 	-- 	+	PvP: is PvP allowed in this region? (global PvP must be enable)
 	--			default: false
 	-- 			true: PvP is allowed in the region - players can damage other players
+	--			pvp_only_in_pvp_regions = true
+	--				if there are more regions at the same position PvP = true in all
+	--			pvp_only_in_pvp_regions = false
+	--				if there are more regions at the same position PvP = false in all				 
 	-- 	+	MvP: can Mobs damage the Player? e.g. in an city 
 	--			default: true 
 	--			false: in this region mobs do not harm Player
+	--				if there are more regions at the same position MvP = false in all				 
 	--	+	effect:	this region do something to all players, also the owner!  
 	--			default: none
 	-- 			hot: heal over time 
@@ -50,7 +55,7 @@ raz = {
 	--			effects: a zone with an effect can not become parent, no player can mark a region there
 	raz_store = AreaStore(),
 	region_attribute = {
-		"owner", "protect", "guest", "PvP", "MvP", "effect", "parent", 
+		"owner", "region_name", "protect", "guest", "PvP", "MvP", "effect", "parent", 
 	},
 	-- some defaults for the AreaStore data
 	default = {
@@ -71,7 +76,7 @@ raz = {
 		hud_stringtext_pvp = "wilderness (PvP)",
 	},
 
-	-- soem values for the region effects
+	-- some values for the region effects
 	effect = {
 		-- the interval of dealing effects
 		time = 1,
@@ -106,12 +111,9 @@ raz = {
  		white = "0xFFFFFF",
 		black = "0x000000",
 	},
-	-- init region_player for chatcommands
+	-- init command_players for chatcommands
 	command_players = {},
 
-	-- a debug bool
---	debug = false,
-	debug = true,
 
 	-- some defaults
 	-- global PvP in minetest.conf
@@ -129,9 +131,8 @@ raz = {
 	-- false: PvP all over the world, but regions with PvP = false are safe.
 	-- default: true 
 	pvp_only_in_pvp_regions = minetest.settings:get_bool('pvp_only_in_pvp_regions', true),
+	--pvp_only_in_pvp_regions = false,
 
-
-	regions = {}, --WHY
 
 	-- defined Errortextes
 	-- the functions 
@@ -151,47 +152,58 @@ raz = {
 		[11] = "msg: You are not the owner of this region!",
 		[12] = "msg: No Player with this name is in the guestlist!",
 		[13] = "ERROR: No Table returned func: raz:export(export_file_name)", 
-		[14] = "No region with this ID! func: ",
-		[15] = "No region with this ID! func: ",
-		[16] = "No region with this ID! func: ",
-		[17] = "No region with this ID! func: ",
+		[14] = "NO PvP in this zone!",
+		[15] = "msg: A Player with this name is in the guestlist!",
+		[16] = "msg: You don't have the privileg 'region_mark'! ",
+		[17] = "msg: You don't have the privileg 'region_set'! ",
+		[18] = "msg: You don't have the privileg 'region_pvp'! ",
+		[19] = "msg: You don't have the privileg 'region_mvp'! ",
+
 
 	},
 
+	-- for the marker mod adapion
+	--position = {},
 }
 
--- load some other .luas
---WHY?
---dofile(raz.modpath.."/logger.lua") 			-- errorhandling: nothing to do
-
+-----------------------------------
+-- load some .luas
+-----------------------------------
+--
 -- the functions for this mod
+dofile(raz.modpath.."/raz_lib.lua")			-- errorhandling: done
 dofile(raz.modpath.."/raz_func.lua")		-- errorhandling: done
--- init globalstep
+
+-- init globalstep for the hud
 dofile(raz.modpath.."/globalstep.lua") 		-- errorhandling: nothing to do
+
+-- do effects 
 dofile(raz.modpath.."/effect_func.lua")		-- errorhandling: nothing to do
+
+-- create an hud
 dofile(raz.modpath.."/hud.lua")				-- errorhandling: nothing to do
+
+-- modify mintest-functions
 dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: nothing to do
+
+-- load converter for ShadowNinja areas
 dofile(raz.modpath.."/convert.lua")			-- errorhandling: nothing to do
+
+-- set priviles and commands
 dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	
 
 
 
+-- load regions from file
+-- fill AreaStore()
+local err
+err = raz:load_regions_from_file()
+raz:msg_handling(err)
+
+-- all done then ....
 minetest.log("action", "[" .. raz.modname .. "] successfully loaded .lua!")
 
-local err
--- load regions form file
-err = raz:load_regions_from_file()
-minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file: -"..err)
 
-
---WHY raz:update_regions()?
--- update raz.regions
---err = raz:update_regions()
---minetest.log("action", "[" .. raz.modname .. "] raz:update_regions: -"..err)
-
-
---for debuging an exercises :)
---dofile(raz.modpath.."/debug.lua")
 
 
 

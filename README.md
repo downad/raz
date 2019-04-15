@@ -60,7 +60,7 @@ region_set *params* | *protect* <id> | Protect the region with the ID (only OWN 
  | | *ban* **name** | disallow the player **name** (only OWN regions) to 'dig' and 'build' like in the protected region.
 region_pvp *params* | *PvP* **true/false** | can make the zone to become an arena with PvP (globaly PvP must be enabled) | privileg - region_lv3
 region_MvP *params* | *MvP* **true/false** | can enable or disable that Mobs can damage the player | privileg - region_lv4
-region_effect *params* | *effect* **hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg - region_lv5
+region_effect *params* | *effect* **none,hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg - region_lv5
 region_special *parms* | *parent* | mark an region as parent, so other regions can be placed in that region | privileg - region_admin.
 | | *show* **1 - 3** | shows a list of all values from regions-data in the range **start** **-** **end**. If only **start** is given it shows the region **start**. Without **start** all regions are listed.
 | | *import* | import raz.export_file_name. 
