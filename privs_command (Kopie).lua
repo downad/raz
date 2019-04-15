@@ -16,13 +16,11 @@ minetest.register_privilege("region_mark", "Can set, remove and rename own regio
 
 --- chatcommand region list to show all region that i own or i am guest in
 
--- commands for all player (must minimum have the interact privileg
--- if a higher privileg is needed the function command_XXXX checks the privileg 
--- command: 'region status' lists details for the region the player is in.
-
+-- commands for all player
+-- command: 'region status' lists detais for the region the player is in.
 minetest.register_chatcommand("region", {
-	description = "Call \'region help <command>\' to get more information about the chatcommand.",
-	params = "<help> <status> <pos1><pos2><set><remove><protect><open>",
+	description = "Show a list of this regions with all data.\n Call \'region status\' to get an detailed view of the region you are in.",
+	params = "<status>",
 	privs = "interact", -- no spezial privileg
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
@@ -30,47 +28,65 @@ minetest.register_chatcommand("region", {
 		if not player then
 			return false, "Player not found"
 		end
-		if param:sub(1, 4) == "help" then			
-			raz:command_help(param,name)
-		elseif param == "status" then			-- 'end' if param == 
-			raz:command_status(name,pos)
-		elseif param == "pos1" then				-- 'end' if param == 
-			raz:command_pos(name,pos,1)
-		elseif param == "pos2" then 			-- 'end' if param == 
-			raz:command_pos(name,pos,2)
-		elseif param:sub(1, 3) == "set" then 	-- 'end' if param == 
-			raz:command_set(param, name)
-		elseif param:sub(1, 6) == "remove" then -- 'end' if param == 
-			raz:command_remove(param, name)
-		elseif param:sub(1, 7) == "protect" then-- 'end' if param == 
-			raz:command_protect(param, name)
-		elseif param:sub(1, 4) == "open" then	-- 'end' if param == 
-			raz:command_open(param, name)
-		elseif param:sub(1, 6) == "invite" then	-- 'end' if param == 
-			raz:command_invite(param, name)
-		elseif param:sub(1, 3) == "ban" then	-- 'end' if param == 
-			raz:command_ban(param, name)
-		elseif param:sub(1, 12) == "change_owner" then
-
-		elseif param:sub(1, 3) == "PvP" then	-- 'end' if param == 
-			raz:command_pvp(param, name)
-		elseif param:sub(1, 3) == "MvP" then	-- 'end' if param == 
-			raz:command_mvp(param, name)
-	
-
-
-
-
-		elseif param ~= "" then 				-- if no command is found 
-			minetest.chat_send_player(name, "Invalid usage.  Type \"/help region\" for more information.")
-		else
-			minetest.chat_send_player(name, "Region chatcommands: Type \"/help region\" for more information.")
-		end -- 'end' if param == 
+		local counter = 1
+		if param == "status" then
+			for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+				if regions_id then
+					--if raz.raz_store:get_area(regions_id) then
+					local region_data = raz:get_region_datatable(regions_id) 
+					-- name of the region
+					local region_name = region_data.region_name
+					-- owner of the region
+					local owner = region_data.owner
+					-- is it protected?
+					-- true: only owner can 'dig' there
+					local protected = region_data.protected
+					-- guests
+					local guests = region_data.guests
+					-- is this an PvP region?
+					-- true: PvP is allowed in there - player can damage other player
+					local PvP = region_data.PvP
+					-- can Mobs damage the Player?
+					-- false: in this region mobs do not harm Player
+					local MvP = region_data.MvP
+					-- has the region a special effect?
+					-- hot: heal over time 
+					-- fot: feed over time
+					-- bot:	breath ober time
+					-- holy: heal, feed an breath over time
+					-- dot: damage over time
+					-- starve: reduce food over time
+					-- choke: reduce breath over time
+					-- evil: steals food, blood, breath over time
+					local effect = region_data.effect
+					local chat_string = "("..counter..") - "..region_name.." owned by "..owner..".\n"
+					if protected then
+						chat_string = chat_string.." The region is protected!" 
+					else
+						chat_string = chat_string.." There is no protection." 
+					end
+					if string.len(guests) > 1 then
+						chat_string = chat_string.." Guests: "..guests..".\n"
+					end 
+					if PvP then
+						chat_string = chat_string.." PvP is allowed." 
+					end
+					if MvP then
+						chat_string = chat_string.." Mobs can damage you." 
+					end
+					if effect ~= "none" then
+						chat_string = chat_string.."\n This region has the effect: "..effect 
+					end
+					minetest.chat_send_player(name, chat_string)
+					counter = counter + 1	
+				else
+					minetest.chat_send_player(name, raz.default.wilderness)
+				end -- end if regions_id then
+			end -- end for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+		end -- end if param == "status" then
 	end -- end function(name, param)
 })
 
-
---[[
 
 -- command for player with privileg region_lv1
 --"region_lv1" ==> Can set and remove own regions.
@@ -254,9 +270,6 @@ minetest.register_chatcommand("region_mvp", {
 		end -- 'end' if param == 
 	end -- end func = function(name, param)
 })
-
-
-]]--
 -- commands for the region_admin
 -- command: 'region_special show' lists all region 
 --			'region_special show 3' shows only the region with the id 3

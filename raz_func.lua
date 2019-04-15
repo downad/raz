@@ -1,331 +1,492 @@
--- recreate the regions-table from AreaStore
--- this must done befor saving the file
--- WHY?
--- msg/error handling: no
--- return 0 = no error
-function raz:update_regions_2()
-	minetest.log("action", "[" .. raz.modname .. "] raz:update_regions() ")
-	local counter = 0
-	raz.regions = {}
-	while raz.raz_store:get_area(counter) do
-		table.insert(raz.regions, raz.raz_store:get_area(counter,true,true))
-		counter = counter + 1
-		minetest.log("action", "[" .. raz.modname .. "] raz:update_regions() counter :"..tostring(counter).."!!!!!") 
-		--raz:print_region_datatable_for_id(counter)
-	end
-	-- save changes
-	raz:save_regions_to_file()
-	-- No Error
-	return 0 
-end
+--#---------------------------------------
+--
+-- functions to handle commands
+--
+--#---------------------------------------
 
--- load the AreaStore() from file
--- msg/error handling: no
--- return 0 = no error
-function raz:load_regions_from_file()
-	minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file()")
-	raz.raz_store:from_file(raz.worlddir .."/".. raz.store_file_name) 
-	-- No Error
-	return 0 
-end
 
--- save AreaStore() to file
--- msg/error handling: no
--- return 0 = no error
-function raz:save_regions_to_file()
-	minetest.log("action", "[" .. raz.modname .. "] raz:save_regions_to_file()")	
-	raz.raz_store:to_file(raz.worlddir .."/".. raz.store_file_name) 
-	-- No Error
-	return 0 
-end
 
--- delete id form AreaStore()
--- the get_areas return a pointer, so re-copie the areastore and 'forget' to copie the region with the id
--- check if id ~=0
+
+-----------------------------------------
+--
+-- command help
+-- privileg: interact
+--
+-----------------------------------------
+-- called: 'region help {command}'
+-- sends the player a list with details of the regions
+-- input:
+--		name 	(string) 	of the player
 -- msg/error handling:
--- return 0 - no error
--- return 1 -- "No region with this ID! func: raz:delete_region(id)", 
-function raz:delete_region(id)
-	minetest.log("action", "[" .. raz.modname .. "] raz:delete_region(id) ID: "..tostring(id)) 
-	if raz.raz_store:get_area(id) == nil then
-		-- Error
-		return 1 -- "No region with this ID! func: raz:delete_region(id)",
-	end 
-
-	local counter = 0
-	local temp_store = AreaStore() 
-	local region_values = {}
-
-	-- copy all regions to temp_store
-	while raz.raz_store:get_area(counter) do
-		if counter ~=id then
-			-- no errorcheck - get_area / insert_area are build in
-			region_values = raz.raz_store:get_area(counter,true,true)
-			temp_store:insert_area(region_values.min, region_values.max, region_values.data)
-		else
-			-- no errorcheck - remove_area is build in
-			raz.raz_store:remove_area(id)
-		end
-		counter = counter + 1
+-- return false - on error
+function raz:command_help(param, name)
+	if not minetest.check_player_privs(name, { interact = true }) then 
+		return false		
 	end
-
-	-- recreate raz.raz_store
-	raz.raz_store = AreaStore()
-	region_values = {}
-
-	-- copy all value back
-	counter = 0
-	while temp_store:get_area(counter) do
-			-- no errorcheck - get_area / insert_area are build in
-			region_values = temp_store:get_area(counter,true,true)
-			raz:set_region(region_values.min, region_values.max, region_values.data)
-		counter = counter + 1
-	end
-	-- No Error
-	return 0 
-end
-
-
-
--- Export the AreaStore table to a file
--- the export-file has this format, 3 lines: [min/pos1], [max/pos2], [data]
--- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
--- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
---	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["parent"] = false}
--- msg/error handling:
--- return 0 - no error
--- return err from io.open
--- return 13 -- "ERROR: No Table returned func: raz:export(export_file_name)", 
-function raz:export(export_file_name)
-	local file_name = raz.worlddir .."/".. export_file_name --raz.export_file_name
-	local file
-	local err
-
-	-- open/create a new file for the export
-	file, err = io.open(file_name, "w")
-	if err then	
-		minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file_name) :"..tostring(raz:file_exists(file_name))) 
-		minetest.log("error", "[" .. raz.modname .. "] file, err = io.open(file_name, w) ERROR :"..err) 
-		return err
-	end
-	io.close(file)
+	-- value[1] == 'help'
+	local value = string.split(param, " ") 
+	local command = value[2]
+	minetest.log("action", "[" .. raz.modname .. "] raz:command_help param: "..tostring(param)) 
+	minetest.log("action", "[" .. raz.modname .. "] raz:command_help command: "..tostring(command)) 
+	local chat_start = "Call command 'region "..command  
+	if command == "help" then
+	elseif command == "status" then
+		chat_end = chat_start.."' to get some more infos about the region at your position. [privileg: interact]"
+	elseif command == "pos1" then
+		chat_end = chat_start.."' to set your position, this is needed to mark/set your region. Go to one edge and call the command \'region pos1\', "..
+			"go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region. [privileg: region_mark]"
+	elseif command == "pos2" then
+		chat_end = chat_start.."' to set your position, this is needed to mark/set your region. Go to one edge and call the command \'region pos1\',"..
+			" go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region.  [privileg: region_mark]"
+	elseif command == "set"	then
+		chat_end = chat_start.." {region_name}' to mark a region with the name {region_name}. This regions is NOT protected! Go to one edge and call "..
+			"the command \'region pos1\', go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region.  [privileg: region_mark]"
+	elseif command == "remove" then
+		chat_end = chat_start.." {id}' to remove YOUR region with the ID = {id}! [privileg: region_mark]"
+	elseif command == "protect" then
+		chat_end = chat_start.." {id}' to protect your own region. [privileg: region_mark]"
+	elseif command == "open" then
+		chat_end = chat_start.." {id}' to open your region for ALL players. [privileg: region_mark]"
+	elseif command == "invite" then
+		chat_end = chat_start.." {id} {player_name}' to invite this player into your region. Now the players can interact in the region and 'dig'. [privileg: region_set]"
+	elseif command == "ban" then
+		chat_end = chat_start.." {id} {player_name}' to ban this player from interacting in your region. [privileg: region_set]"
+	elseif command == "cange_owner" then
+		chat_end = chat_start.." {id} {player_name}' to transfet YOUR region to an new player. The player must invite you if you want to interact in his NEW region. [privileg: region_set]"
+	elseif command == "pvp" then
+		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-) PvP in your region. [privileg: region_pvp]"
+	elseif command == "mvp" then
+		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-) MvP in your region. Disable MvP if mobs can not harm player! [privileg: region_mvp]"
 	
-	-- open file for append
-	file = io.open(file_name, "a")
 
-	--local region_values = {} 
-	local pos1 = ""
-	local pos2 = ""
-	local data = ""
-	local counter = 0
-	-- loop AreaStore and write for every region 3 lines [min/pos1], [max/pos2], [data]
-	while raz.raz_store:get_area(counter) do
 
-		--region_values = raz.raz_store:get_area(counter,true,true)
-		--pos1 = region_values.min
-		--pos2 = region_values.max
-		--data = region_values.data
-		pos1,pos2,data = raz:get_region_data_by_id(counter,true)
-		if type(pos1) ~= "table" then
-			return 13 -- "ERROR: No Table returned func: raz:export(export_file_name)", 
-		end
-		counter = counter + 1
-		file:write(minetest.serialize(pos1).."\n")
-		file:write(minetest.serialize(pos2).."\n")
-		file:write(data.."\n")
+
+
+	else
+		chat_end = "The command is unknown!"
 	end
-	file:close()
-	-- No Error
-	return 0
+	minetest.chat_send_player(name, chat_end)
+ end
+-----------------------------------------
+--
+-- command status
+-- privileg: interact
+--
+-----------------------------------------
+-- called: 'region status'
+-- sends the player a list with details of the regions
+-- input:
+--		name 	(string) 	of the player
+--		pos 	(table)		of the player
+-- msg/error handling:
+-- return false - on error
+function raz:command_status(name,pos)
+	if not minetest.check_player_privs(name, { interact = true }) then 
+		return false		
+	end
+	for region_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+		local counter = 1
+		if region_id then
+			local header = "status" 
+			-- call command_show (without header!)
+			raz:msg_handling( raz:command_show(header, name,region_id,nil) ) --  message and error handling
+			counter = counter + 1	
+		else
+			minetest.chat_send_player(name, raz.default.wilderness)
+		end -- end if regions_id then
+	end -- end for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
 end
-
-
--- Load the exported AreaStore table from the save file
+ 
+-----------------------------------------
+--
+-- command pos1 or pos2
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region pos1' or 'region pos2'
+-- sends the player a list with details of the regions
+-- input:
+--		name 	(string) 	of the player
+--		pos 	(table)		of the player
+-- 		edge	(number)	1, 2 for the edges
 -- msg/error handling:
 -- return 0 - no error
--- return 6 -- "ERROR: File does not exist!  func: func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
-function raz:import(import_file_name)
-	local counter = 1
-	local pos1 
-	local pos2
-	local data
-
-	-- does the file exist?
-	local file = raz.worlddir .."/"..import_file_name 
-	minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
-	if raz:file_exists(file) ~= true then
-		minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
-		minetest.log("error", "[" .. raz.modname .. "] raz:file_exists(file) :"..file.." does not exist!") 
-		return 6 -- "ERROR: File does not exist!  func: func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
-	end		
-	-- load every line of the file 
-	local lines = raz:lines_from(file)
-
-	-- loop all lines, step 3 
-	-- set pos1, pos2 and data and raz:set_region
-	while lines[counter] do
-		-- deserialize to become a vector
-		pos1 = minetest.deserialize(lines[counter])
-		pos2 = minetest.deserialize(lines[counter+1])
-		-- is an string
-	 	data = lines[counter+2]
-
-		raz:set_region(pos1,pos2,data)
-	 	counter = counter + 3
+function raz:command_pos(name,pos,edge)
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
 	end
-	-- Save AreaStore()
---WHY raz:update_regions()?
---	raz.update_regions()
-	raz:save_regions_to_file()
-	-- No Error
-	return 0
-
-end
-
--- see if the file exists 
--- msg/error handling: no
-function raz:file_exists(file)
-  local f = io.open(file, "rb")
-  if f then f:close() end
-  return f ~= nil
-end
-
--- get all lines from a file, returns an empty 
--- list/table if the file does not exist
--- msg/error handling: no
-function raz:lines_from(file)
-	if not file_exists(file) then return {} end
-	local lines = {}
-	for line in io.lines(file) do 
-	lines[#lines + 1] = line
-	end
-	return lines
-end
-
--- insert a new region, update AreaStore, save AreaStore
--- pos1 and pos2 must be an vector
--- data must be an designed string like
--- because in the datafield could only stored a string
--- data = "return {[\"owner\"] = \"adownad\", [\"protected\"] = true, [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\", [\"region_name\"] = \"Meine Wiese mit Haus\"}"
--- msg/error handling: 
--- return id of new region
-function raz:set_region(pos1,pos2,data)
-	--minetest.log("action", "[" .. raz.modname .. "] raz:set_region(pos1,pos2,data)")	
-	if type(data) ~= "string" then
-		data = minetest.serialize(data)
-	end
-	local id = raz.raz_store:insert_area(pos1, pos2, data)
-	--minetest.log("action", "[" .. raz.modname .. "] set_region id ".. tostring(id))
---WHY raz:update_regions()?
---	raz.update_regions()
-	raz.save_regions_to_file()
-	return id
-end
-
--- create the designed data string for the AreaStore()
--- data must be an designed string like
--- because in the datafield could only stored a string
--- data = "return {[\"owner\"] = \"playername\", [\"region_name\"] = \"Meine Wiese mit Haus\" , [\"protected\"] = true, 
---			[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\"}"
--- owner and region_name are MUST
--- if the rest is missing default will set.
--- the flag -do_not_check_player = true allows to create regions for owners who are not player - maybe because you will convert an areas.dat for an other system.
--- msg/error handling:
--- return data_string for insert_area(edge1, edge2, DATA) as string
-function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent,do_not_check_player)
-	minetest.log("action", "[" .. raz.modname .. "] raz:create_data(...)"	)
-	-- check input-values
-	local player = minetest.get_player_by_name(owner)
-	if not player and do_not_check_player ~= true then
-		owner = minetest.setting_get("name")
-	end
-	if not type(region_name) == "string" then
-		return 1 -- there is an error
-	end
-	if not type(protected) == "boolean" or protected == nil then
-		protected = raz.default.protected
-	end
-	if not type(guests_string) == "string" or guests_string == nil then
-		guests_string = raz.default.guests
-	end
-	if not type(PvP) == "boolean" or PvP == nil then
-		PvP = raz.default.PvP
-	end
-	if not type(MvP) == "boolean" or MvP == nil then
-		MvP = raz.default.MvP
-	end
-	if not type(effect) == "string" or effect == nil then
-		effect = raz.default.effect
-	end
-	if not type(parent) == "boolean" or parent == nil then
-		parent = raz.default.parent
-	end
-	-- only for debugging
-	if raz.debug == true then
-		minetest.log("action", "[" .. raz.modname .. "] ***********************************************")
-		minetest.log("action", "[" .. raz.modname .. "] region_name: "..tostring(region_name))
-		minetest.log("action", "[" .. raz.modname .. "] owner: "..tostring(owner))
-		minetest.log("action", "[" .. raz.modname .. "] protected: "..tostring(protected))
-		minetest.log("action", "[" .. raz.modname .. "] guests: "..tostring(guests_string))
-		minetest.log("action", "[" .. raz.modname .. "] PvP: "..tostring(PvP))
-		minetest.log("action", "[" .. raz.modname .. "] MvP: "..tostring(MvP))
-		minetest.log("action", "[" .. raz.modname .. "] effect: "..tostring(effect))
-	end
-	-- create the datastring
-	local data_string = "return {[\"owner\"] = \""..owner.."\", [\"region_name\"] = \""..region_name.."\", [\"protected\"] = "..tostring(protected)..", [\"guests\"] = \""..guests_string.."\", [\"PvP\"] = "..tostring(PvP)..", [\"MvP\"] = "..tostring(MvP)..", [\"effect\"] = \""..effect.."\", [\"parent\"] = "..tostring(parent).."}"  
-	return data_string
-end 
-
-
--- get the data field of a given region 
--- and returns a table with the data
--- msg/error handling: 
--- return data as table
-function raz:get_region_datatable(id)
-	-- for debug 
-	-- minetest.log("action", "[" .. raz.modname .. "] raz:get_region_datatable(id)")
-	local region_values = raz.raz_store:get_area(id,true,true)
-	-- the datafield is an designed string that must deserialised to table
-	local data = minetest.deserialize(region_values.data)
-	return data
-end
-
--- convert a table do a list of strings, there is no key!
--- msg/error handling: 
--- return string as string
-function raz:table_to_string(given_table)
-	minetest.log("action", "[" .. raz.modname .. "] raz:table_to_string(table)")
-	local string = ""
-	for k, v in pairs(given_table) do
-		if k then
-			string = string..v..","
+	if edge == 1 then	
+		if not raz.command_players[name] then
+			raz.command_players[name] = {pos1 = pos}
+		else
+			raz.command_players[name].pos1 = pos
 		end
+		minetest.chat_send_player(name, "Position 1: " .. minetest.pos_to_string(pos))
+	elseif edge == 2 then
+		if not raz.command_players[name] then
+			raz.command_players[name] = {pos2 = pos}
+		else
+			raz.command_players[name].pos2 = pos
+		end
+		minetest.chat_send_player(name, "Position 2: " .. minetest.pos_to_string(pos))
 	end
-	return string
 end
 
--- command region_special show >optional id1, id2<
+
+-----------------------------------------
+--
+-- command set
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region set {region_name} 
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_set(param, name) 
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end
+	local region_name = param:sub(5, -1)
+	if not raz.command_players[name] or not raz.command_players[name].pos1 then
+		minetest.chat_send_player(name, "Position 1 missing, use \"/region pos1\" to set.")
+	elseif not raz.command_players[name].pos2 then
+		minetest.chat_send_player(name, "Position 2 missing, use \"/region pos2\" to set.")
+	elseif string.len(region_name) < 1 then
+		minetest.chat_send_player(name, "please set a name behind set, use \"/region set {region_name}\" to set.")
+	else
+		-- check if the player canAdd this!
+		local data = raz:create_data(name,region_name) 
+		if data == 1 then
+			minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
+		else
+			raz:set_region(raz.command_players[name].pos1,raz.command_players[name].pos2,data)
+			minetest.chat_send_player(name, "Region with the name >"..region_name.."< set!")
+		end
+		raz.command_players[name] = nil
+	end
+end
+
+
+-----------------------------------------
+--
+-- command remove
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region remove {id} 
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_remove(param, name)
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end
+	local id = tonumber(param:sub(8, -1))
+	if id ~= nil then
+		if raz.raz_store:get_area(id) then
+			local data_table = raz:get_region_datatable(id)
+			if name == data_table.owner or minetest.check_player_privs(name, { region_admin = true }) then
+				raz:delete_region(id)
+				minetest.chat_send_player(name, "The region with ID: "..tostring(id).." was removed!")	
+			else
+				minetest.chat_send_player(name, "You are not the owner of the region with the ID: "..tostring(id).."!")
+			end
+		else
+			minetest.chat_send_player(name, "There is no region with ID: "..tostring(id).."!")					
+		end
+	else
+		minetest.chat_send_player(name, "Region with the ID: "..tostring(id).." is unknown!")
+	end
+end
+
+
+-----------------------------------------
+--
+-- command protect
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region protect {id} 
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_protect(param, name)
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end
+	-- get the args after protect
+	-- it must be an id of an region that is owned by name
+	local value = string.split(param:sub(8, -1), " ") 
+	if value[1] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help protect\" for more information.")
+	else
+		err = raz:region_set_attribute(name, value[1], "protect", true)
+		raz:msg_handling(err, name) --  message and error handling
+	end
+end
+
+-----------------------------------------
+--
+-- command open
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region open {id} 
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_open(param, name)
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end
+	-- get the args after open
+	-- it must be an id of an region that is owned by name
+	local value = string.split(param:sub(5, -1), " ") 
+	if value[1] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help open\" for more information.")
+	else
+		err = raz:region_set_attribute(name, value[1], "protect", false)
+		raz:msg_handling(err, name) --  message and error handling
+	end
+end
+
+
+-----------------------------------------
+--
+-- command invite player
+-- privileg: region_set
+--
+-----------------------------------------
+-- called: 'region invite {id} {playername}
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_invite(param, name)
+	-- check privileg
+	local err = raz:has_region_set(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end	-- get the args after invite
+	-- value[1]: it must be an id of an region that is owned by name
+	-- value[2]: must be a name of a player
+	local value = string.split(param:sub(8, -1), " ") 
+	if value[1] == nil or value[2] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help invite\" for more information.")
+	else
+		local invite = true
+		err = raz:region_set_attribute(name, value[1], "guest", value[2], invite)
+		raz:msg_handling(err, name) --  message and error handling
+	end
+end
+
+-----------------------------------------
+--
+-- command ban player
+-- privileg: region_set
+--
+-----------------------------------------
+-- called: 'region ban {id} {playername}
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_ban(param, name)
+	-- check privileg
+	local err = raz:has_region_set(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end	-- get the args after ban
+	-- value[1]: it must be an id of an region that is owned by name
+	-- value[2]: must be a name of a player
+	local value = string.split(param:sub(4, -1), " ") 
+	if value[1] == nil or value[2] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help ban\" for more information.")
+	else
+		local invite = false
+		err = raz:region_set_attribute(name, value[1], "guest", value[2], invite)
+		raz:msg_handling(err, name) --  message and error handling
+	end
+end
+
+
+-----------------------------------------
+--
+-- command change_owner id player
+-- privileg: region_set
+--
+-----------------------------------------
+-- called: 'region change_owner {id} {playername}
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_change_owner(param, name)
+	-- check privileg
+	local err = raz:has_region_set(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end	-- get the args after change_owner
+	-- value[1]: it must be an id of an region that is owned by name
+	-- value[2]: must be a name of a player
+	local value = string.split(param:sub(13, -1), " ") --string.trim(param:sub(7, -1))
+	if value[1] == nil or value[2] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help change_owner" for more information.")
+	else
+		err = raz:region_set_attribute(name, value[1], "owner", value[2]) 
+		raz:msg_handling(err, name) --  message and error handling
+	end
+end
+
+
+-----------------------------------------
+--
+-- command pvp +/-
+-- privileg: region_pvp
+--
+-----------------------------------------
+-- called: 'region pvp {id} {+/-}
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_pvp(param, name)
+	-- check privileg
+	local err = raz:has_region_pvp(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end	-- get the args after invite
+	-- value[1]: it must be an id of an region that is owned by name
+	-- value[2]: must be + or -
+	local value = string.split(param:sub(4, -1), " ") 
+	if value[1] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help pvp\" for more information.")
+	elseif value[2] == "+" or value[2] == true then
+		err = raz:region_set_attribute(name, value[1], "PvP", true) 
+		raz:msg_handling(err, name) --  message and error handling
+	elseif value[2] == "-" or value[2] == false then 
+		err = raz:region_set_attribute(name, value[1], "PvP", false) 
+		raz:msg_handling(err, name) --  message and error handling
+	else
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help pvp\" for more information.")
+	end
+end
+
+
+-----------------------------------------
+--
+-- command mvp +/-
+-- privileg: region_mvp
+--
+-----------------------------------------
+-- called: 'region mvp {id} {+/-}
+-- input:
+--		name 	(string) 	of the player
+--		param 	(string)	
+-- msg/error handling: self
+function raz:command_mvp(param, name)
+	-- check privileg
+	local err = raz:has_region_mvp(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return false
+	end	-- get the args after invite
+	-- value[1]: it must be an id of an region that is owned by name
+	-- value[2]: must be + or -
+	local value = string.split(param:sub(4, -1), " ") 
+	if value[1] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help mvp\" for more information.")
+	elseif value[2] == "+" or value[2] == true then
+		err = raz:region_set_attribute(name, value[1], "MvP", true) 
+		raz:msg_handling(err, name) --  message and error handling
+	elseif value[2] == "-" or value[2] == false then 
+		err = raz:region_set_attribute(name, value[1], "MvP", false) 
+		raz:msg_handling(err, name) --  message and error handling
+	else
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help mvp\" for more information.")
+	end
+end
+
+
+
+
+
+
+
+
+-----------------------------------------
+--
+-- command show 
+-- privileg: region_admin *or call by command_status
+--
+-----------------------------------------
+-- called: 'region show' <id1> <id2>  		<optional>
 -- sends the player a list of regions
 -- msg/error handling:
 -- return 0 - no error
-function raz:region_show(name,list_start,list_end)
-	--minetest.log("action", "[" .. raz.modname .. "] raz:region_show(name,list_start,list_end)")
+function raz:command_show(header, name,list_start,list_end)
 	local region_values = {}
 	local pos1 = ""
 	local pos2 = ""
 	local data = ""
 	local chat_string = "### List of Regions ###\n"
+	if header == false or header == "status" then
+		chat_string = ""
+	end
+	-- no privileg chek: header == status then command_show is called by command_status 
+	-- else privileg region_admin 
+	if header ~= "status" then
+		if not minetest.check_player_privs(name, { region_admin = true }) then 
+			return false		
+		end	 
+	end
+
+	-- if list_start is not set
+	-- list_end is also not set
+	-- list all, from 0 to end (-1)
 	if list_start == nil then
 		list_start = 0
+		list_end = -1
+	elseif list_end == nil then
+		-- list_start is set an list_end not 
+		-- show regions with id = list_start
+		list_end = list_start
 	end
-	local counter = list_start
-	if list_end == nil or list_end < list_start then
+
+	-- end < start then change start and end
+	if list_end < list_start and list_end ~= -1 then
+		local changer = list_end
 		list_end = list_start 
+		list_start = changer
 	end
+	
 	local stop_list = list_end
-	if list_start == list_end then
-		stop_list = -1
-	end
+	local counter = list_start
+
 	-- get all regions in AreaStore()
 	while raz.raz_store:get_area(counter) do
 		if counter <= stop_list or stop_list < 0 then
@@ -333,395 +494,177 @@ function raz:region_show(name,list_start,list_end)
 			pos1 = "["..region_values.min.x..","..region_values.min.y..","..region_values.min.z.."]"
 			pos2 = "["..region_values.max.x..","..region_values.max.y..","..region_values.max.z.."]"
 			data = minetest.deserialize(region_values.data)
-			chat_string = chat_string.."\n"..counter.." - "..data.region_name.." {"..data.owner.."} "..pos1.." / "..pos2
-			chat_string = chat_string.."<-> protected: "..tostring(data.protected).."<-> Guests: "..data.guests.."\n"
-			if data.PvP then
-				chat_string = chat_string.."<-> PvP "
+			chat_string = chat_string..data.region_name.."(ID "..counter..") owned by "..data.owner.." \n( "..pos1.." / "..pos2.." )"
+			if data.protected then
+				chat_string = chat_string..", is protected"
 			end
-			if data.MvP then
-				chat_string = chat_string.."<-> MvP "
+			if data.guests ~= (nil or ",") then 
+				chat_string = chat_string..", Guests: "..data.guests--.."\n"
+			end
+			if data.PvP then
+				chat_string = chat_string..", PvP enable"
+			end
+			if data.MvP == false then
+				chat_string = chat_string..", Mobs do no damage"
 			end
 			if data.effect ~="none" then
-				chat_string = chat_string.." <-> " ..tostring(data.effect).." - "
+				chat_string = chat_string..", effects: " ..tostring(data.effect)
 			end
 			if data.parent then
-				chat_string = chat_string.."<-> is parent "
+				chat_string = chat_string..", is parent"
 			end
 		end -- if counter <= stop_list or stop_list < 0 then
 		counter = counter + 1
 	end --while raz.raz_store:get_area(counter) do
-	minetest.chat_send_player(name, chat_string)
+	minetest.chat_send_player(name, chat_string..".")
 	return 0
 end
 
--- command region_set_attribute(name, id, region_attribute, value, bool)
--- the default bool is 'nil' - this bool is used to add or remove guests 
--- this function checks id, region_attribut and value = bool or value = string (effects - hot, bot, holy, dot, choke, evil)
--- msg/error handling:
--- return info: text -- no error
--- return 2 -- "ERROR: No region with this ID! func: raz:region_set_attribute(name, id, region_attribute, value),
--- return 8 -- "ERROR: The region_attribute dit not fit! func: raz:region_set_attribute(name, id, region_attribute, value)",
--- return 9 -- "ERROR: There is no Player with this name! func: raz:region_set_attribute(name, id, region_attribute, value)",
--- return 10 -- "ERROR: Wrong effect! func: raz:region_set_attribute(name, id, region_attribute, value)",
--- return 11 -- "ERROR: You are not the owner of this region! func: raz:region_set_attribute(name, id, region_attribute, value)",
--- return 12 -- "ERROR: No Player with this name is in the guestlist! func: raz:region_set_attribute(name, id, region_attribute, value)",
-function raz:region_set_attribute(name, id, region_attribute, value, bool)
-	minetest.log("action", "[" .. raz.modname .. "] raz:region_set_attribute(name, id, region_attribute, value)")
-	minetest.log("action", "[" .. raz.modname .. "] name "..tostring(name))
-	minetest.log("action", "[" .. raz.modname .. "] id = "..tostring(id))
-	minetest.log("action", "[" .. raz.modname .. "] region_attribute = "..tostring(region_attribute))
-	minetest.log("action", "[" .. raz.modname .. "] value = <"..tostring(value)..">")
-	local region_values = ""
-	local pos1 = ""
-	local pos2 = ""
-	local data = {}
-	-- ckeck is this ID in AreaStore()?
-	if raz.raz_store:get_area(id) then
-		-- get region values 
-		pos1,pos2,data = raz:get_region_data_by_id(id)
-		-- check if player is owner of the regions
-		if name ~= data.owner then
-			if not minetest.check_player_privs(name, { region_admin = true }) then
-				return 11 -- "ERROR: You are not the owner of this region! func: raz:region_set_attribute(name, id, region_attribute, value)",
+
+
+
+
+
+--[[
+function raz:get_region_status(pos)
+	local chat_string = ""
+	for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+		if regions_id then
+			--if raz.raz_store:get_area(regions_id) then
+			local region_data = raz:get_region_datatable(regions_id) 
+			-- name of the region
+			local region_name = region_data.region_name
+			-- owner of the region
+			local owner = region_data.owner
+			-- is it protected?
+			-- true: only owner can 'dig' there
+			local protected = region_data.protected
+			-- guests
+			local guests = region_data.guests
+			-- is this an PvP region?
+			-- true: PvP is allowed in there - player can damage other player
+			local PvP = region_data.PvP
+			-- can Mobs damage the Player?
+			-- false: in this region mobs do not harm Player
+			local MvP = region_data.MvP
+			-- has the region a special effect?
+			-- hot: heal over time 
+			-- fot: feed over time
+			-- bot:	breath ober time
+			-- holy: heal, feed an breath over time
+			-- dot: damage over time
+			-- starve: reduce food over time
+			-- choke: reduce breath over time
+			-- evil: steals food, blood, breath over time
+			local effect = region_data.effect
+			chat_string = chat_string.."\n("..counter..") - "..region_name.." owned by "..owner..".\n"
+			if protected then
+				chat_string = chat_string.." The region is protected!" 
+			else
+				chat_string = chat_string.." There is no protection." 
 			end
-		end
-		-- check if the attribute is allowed
-		if not raz:check_name_in_table(region_attribute, raz.region_attribute) then
-			return 8 -- "ERROR: The region_attribute dit not fit! func: raz:region_set_attribute(name, id, region_attribute, value)",
-		end
-		-- modify the attribute
-		if 	region_attribute == "protect" then
-			if type(value) == "boolean" then 
-				data.protected = value 
+			if string.len(guests) > 1 then
+				chat_string = chat_string.." Guests: "..guests..".\n"
 			end 
-		elseif 	region_attribute == "owner" then
-			if type(value) == "string" then 
-				-- check player"
-				if not minetest.player_exists(value) then --player then
-					return 9 -- "ERROR: There is no Player with this name! func: raz:region_set_attribute(name, id, region_attribute, value)",
-				end			
-				data.owner = value
-			end 
-		elseif 	region_attribute == "guest" and bool == true then
-			if type(value) == "string" then 
-				-- check player"
-				--local player = minetest.get_player_by_name(value)
-				if not minetest.player_exists(value) then --player then
-					return 9 -- "ERROR: There is no Player with this name! func: raz:region_set_attribute(name, id, region_attribute, value)",
-				end			
-				if data.guests == "," or data.guests == nil then
-					data.guests = value
-				else	
-					data.guests = data.guests..","..value 
-				end
-			end 
-		elseif 	region_attribute == "guest" and bool == false then
-			if type(value) == "string" then 
-				-- check guests
-				local guests = raz:convert_string_to_table(data.guests, ",")
-				if not raz:check_name_in_table(value, guests) then
-					return 12 -- "ERROR: No Player with this name is in the guestlist! func: raz:region_set_attribute(name, id, region_attribute, value)",
-				end
-				-- remove value from guests
-				guests = raz:remove_value_from_table(value, guests)
-				-- data.guests must be an STRING!
-				local new_guest_string = raz:table_to_string(guests)
-				data.guests = new_guest_string
-			end 
-		elseif 	region_attribute == "PvP" then
-			if type(value) == "boolean" then 
-				data.PvP = value 
-			end 
-		elseif 	region_attribute == "MvP" then
-			if type(value) == "boolean" then 
-				data.MvP = value 
-			end 
-		elseif 	region_attribute == "parent" then
-			if type(value) == "boolean" then 
-				data.parent = value 
-			end 
-		elseif 	region_attribute == "effect" then
-			if type(value) == "string" then 
-				-- check effects"
-				if not raz:check_name_in_table(value, raz.region_attribute) then
-					return 10 -- "ERROR: Wrong effect! func: raz:region_set_attribute(name, id, region_attribute, value)",
-				end 
-				data.effect = value 
-			end 
-
-		end
-		-- update_regions_data(id,pos1,pos2,data)
-		-- removes the ID from AreaStore and insert a new Region with the new data there
-		if not raz:update_regions_data(id,pos1,pos2,data) then
-			return 7 -- "ERROR: in update_regions_data! func: raz:region_set_attribute(id, region_attribute, bool)", 
-		end
-
-		-- raz:print_region_datatable_for_id(id)
-		-- update
---WHY raz:update_regions()?
---	raz.update_regions()
-		return "info: Region with ID: "..id.." modified attribute "..tostring(region_attribute).." with value "..tostring(value)
-	else
-		-- Error
-		return 2 -- [2] = "No region with this ID!"
+			if PvP then
+				chat_string = chat_string.." PvP is allowed." 
+			end
+			if MvP then
+				chat_string = chat_string.." Mobs can damage you." 
+			end
+			if effect ~= "none" then
+				chat_string = chat_string.."\n This region has the effect: "..effect 
+			end
+			counter = counter + 1	
+		end -- end if regions_id then
+	end -- end for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+	if chat_string == "" then
+		return raz.default.wilderness
 	end
+	return chat_string
 end
 
+]]--
 
--- get all values of a region by id
--- msg/error handling:
--- return pos1,pos2 and data (as 3 tables)
--- return 3 - no region with this ID
-function raz:get_region_data_by_id(id,no_deserialize)
-	minetest.log("action", "[" .. raz.modname .. "] raz:get_region_data_by_id(id) ID: "..tostring(id).." raz.raz_store:get_area(id) = "..tostring(raz.raz_store:get_area(id) )) 
-	local region_values = ""
-	local pos1 = ""
-	local pos2 = ""
-	local data --= {}
-	if raz.raz_store:get_area(id) then 
-		region_values = raz.raz_store:get_area(id,true,true)
-		pos1 = region_values.min
-		pos2 = region_values.max
-		if no_deserialize ~= true then
-			data = minetest.deserialize(region_values.data)
-		else
-			data = region_values.data
-		end
-		return pos1,pos2,data
+
+-----------------------------------------
+--
+-- Check Privilegs
+--
+-----------------------------------------
+--
+--
+-----------------------------------------
+--
+-- player has_region_mark
+--
+-----------------------------------------
+-- check ich name has the privileg or is admin
+-- msg/error handling: 
+-- return true
+-- return 16 - for error
+function raz:has_region_mark(name)
+	if minetest.check_player_privs(name, { region_mark = true }) then 
+		return true		
 	end
-	-- Error
-	return 3 -- [3] = "No region with this ID!"
+	if minetest.check_player_privs(name, { region_admin = true }) then 
+		return true		
+	end
+	return 16 -- "You dont have the privileg 'region_mark' "
 end
-
--- update datafield  AreaStore()
--- id, the ID to change
--- pos1, pos2 and data are the values to insert
--- msg/error handling:
--- return true 
-function raz:update_regions_data(id,pos1,pos2,data_table)
-	minetest.log("action", "[" .. raz.modname .. "] raz:update_regions_data(id,pos1,pos2,data) ID: "..tostring(id)) 
-	--minetest.log("action", "[" .. raz.modname .. "] pos1 = "..minetest.serialize(pos1)) 
-	--minetest.log("action", "[" .. raz.modname .. "] pos2 = "..minetest.serialize(pos2)) 
-	local data_string = minetest.serialize(data_table)
-	--minetest.log("action", "[" .. raz.modname .. "] data_string = "..data_string) 
-	--minetest.log("action", "[" .. raz.modname .. "] type(id) = "..type(id)) 
-
-	local counter = 0
-	-- create an temporary AreaStore()
-	local temp_store = AreaStore() 
-	local region_values = {}
-	-- copy all regions to temp_store
-	while raz.raz_store:get_area(counter) do
-		--minetest.log("action", "[" .. raz.modname .. "] 1. while - counter = "..tostring(counter)) 
-		if counter ~=tonumber(id) then
-			region_values = raz.raz_store:get_area(counter,true,true)
-			temp_store:insert_area(region_values.min, region_values.max, region_values.data)
-		else
-			--minetest.log("action", "[" .. raz.modname .. "] -else- counter = "..tostring(counter)) 
-			--minetest.log("action", "[" .. raz.modname .. "] pos1 = "..minetest.serialize(pos1)) 
-			--minetest.log("action", "[" .. raz.modname .. "] pos2 = "..minetest.serialize(pos2)) 
-			--minetest.log("action", "[" .. raz.modname .. "] data = "..data_string) 
-			temp_store:insert_area(pos1, pos2, data_string)
-		end
-		
-		counter = counter + 1
+-----------------------------------------
+--
+-- player has_region_set
+--
+-----------------------------------------
+-- check ich name has the privileg or is admin
+-- msg/error handling: 
+-- return true
+-- return 16 - for error
+function raz:has_region_set(name)
+	if minetest.check_player_privs(name, { region_set = true }) then 
+		return true		
 	end
-	-- recreate raz.raz_store
-	raz.raz_store = AreaStore()
-	counter = 0
-	-- copy all regions from temp_store to raz.raz_store
-	while temp_store:get_area(counter) do
-		--minetest.log("action", "[" .. raz.modname .. "] 2. while - counter = "..tostring(counter)) 
-		region_values = temp_store:get_area(counter,true,true)
-		--minetest.log("action", "[" .. raz.modname .. "] pos1 = "..tostring(minetest.serialize(region_values.min)))
-		--minetest.log("action", "[" .. raz.modname .. "] pos2 = "..tostring(minetest.serialize(region_values.max))) 
-		--minetest.log("action", "[" .. raz.modname .. "] data = "..tostring(region_values.data)) 
-	
-		raz.raz_store:insert_area(region_values.min, region_values.max, region_values.data)
-		counter = counter + 1
+	if minetest.check_player_privs(name, { region_admin = true }) then 
+		return true		
 	end
-	temp_store = {}
-
-	-- save changes
-	raz:save_regions_to_file()
-
-	return true
+	return 17 -- "You dont have the privileg 'region_set' "
 end
-
--- this function handles messages and errors
--- raz:msg_handling(err, name) --  message and error handling
--- input err, name 
--- if name ~= nil check name and chat_send msg to name
--- if err == "", nil or 0 -> no Error: nothing happens
--- else minetest.log("error",
--- the raz.error_text[err] is defined in init.
--- msg/error handling:
--- return NOTHING - everything is ok
-function raz:msg_handling(err, name)
-	if err == "" or err == nil or err == 0 then
-		return 
+-----------------------------------------
+--
+-- player has_region_pvp
+--
+-----------------------------------------
+-- check ich name has the privileg or is admin
+-- msg/error handling: 
+-- return true
+-- return 16 - for error
+function raz:has_region_pvp(name)
+	if minetest.check_player_privs(name, { region_pvp = true }) then 
+		return true		
 	end
-	minetest.log("action", "[" .. raz.modname .. "] ##########################################################")
-	minetest.log("action", "[" .. raz.modname .. "] msg_handling -err: " .. tostring(err))
-	minetest.log("action", "[" .. raz.modname .. "] type(err): " .. type(err))
-	minetest.log("action", "[" .. raz.modname .. "] name: " .. tostring(name))
-	
-	if type(err) == "string" then
-		-- is err an info
-		if err:sub(1, 5) == "info:" then
-			minetest.log("action", "[" .. raz.modname .. "]".. err:sub(6, -1))	
-		else 
-			minetest.log("error", "[" .. raz.modname .. "] Error: ".. err)	
-		end
-	elseif type(err) == "number" then
-		minetest.log("error", "[" .. raz.modname .. "] Error: ".. raz.error_text[err])	
+	if minetest.check_player_privs(name, { region_admin = true }) then 
+		return true		
 	end
-	if name == nil then 
-		return
-	end
-	-- if name exists send chat
-	if minetest.player_exists(name) then 
-		if type(err) == "number" then
-			minetest.chat_send_player(name, raz.error_text[err])
-		else
-			minetest.chat_send_player(name, err)
-		end
-	end
+	return 18 -- "You dont have the privileg 'region_pvp' "
 end
-
--- check if a name is in an table
--- msg/error handling:
--- return true if the name is in the table
--- return false if not
-function raz:check_name_in_table(name, given_table)
-  for i,v in ipairs(given_table) do
-
-    if v == name then
-      return true
-    end
-
-  end
-  return false
+-----------------------------------------
+--
+-- player has_region_mvp
+--
+-----------------------------------------
+-- check ich name has the privileg or is admin
+-- msg/error handling: 
+-- return true
+-- return 16 - for error
+function raz:has_region_mvp(name)
+	if minetest.check_player_privs(name, { region_mvp = true }) then 
+		return true		
+	end
+	if minetest.check_player_privs(name, { region_admin = true }) then 
+		return true		
+	end
+	return 19 -- "You dont have the privileg 'region_mvp' "
 end
-
--- remove a value from table
--- msg/error handling:
--- return table with the removed element
-function raz:remove_value_from_table(value, given_table)
-	minetest.log("action", "[" .. raz.modname .. "] raz:remove_value_from_table value = "..tostring(value))
-	local return_table = {}
-	for k, v in ipairs(given_table) do
-		if k then
-			minetest.log("action", "[" .. raz.modname .. "] raz:remove_value_from_table key = "..tostring(k))
-			minetest.log("action", "[" .. raz.modname .. "] raz:remove_value_from_table v = "..tostring(v))
-			minetest.log("action", "[" .. raz.modname .. "] raz:remove_value_from_table type(return_table) = "..type(return_table))
-		    if v ~= value then
-				minetest.log("action", "[" .. raz.modname .. "] raz:remove_value_from_table v ~= value "..tostring(v).." ~= "..value)
-				minetest.log("action", "[" .. raz.modname .. "] raz:remove_value_from_table type(v) = "..type(v))
-				table.insert(return_table, v)
-		    end
-		end
-	end
-	return return_table
-end
-
--- convert string in table, default seperator is ","
--- msg/error handling:
--- return value_tables with the elements
-function raz:convert_string_to_table(string, seperator)
-	if seperator == nil then
-		seperator = ","
-	end
-	local value_table = {}
-	value_table = string.split(string,seperator)string.split(string,seperator)
-	minetest.log("action", "[" .. raz.modname .. "] raz:convert_string_to_table value = "..tostring(value_table))
-	minetest.log("action", "[" .. raz.modname .. "] raz:convert_string_to_table type = "..tostring(type(value_table)))
-
-	return value_table
-end
-
-
--- print a List of all regions to the minetest.log
--- for debug only
-function raz:print_regions()
-	if raz.debug == false then
-		return
-	end
-	minetest.log("action", "[" .. raz.modname .. "] raz:print_regions")
-
-	raz.regions = {}
-	local counter = 0
-	local region_values = ""
-	local pos1 = ""
-	local pos2 = ""
-	local data = ""
-	minetest.log("action", "[" .. raz.modname .. "] Print list of stored regions.")
-	while raz.raz_store:get_area(counter) do
-		region_values = raz.raz_store:get_area(counter,true,true)
-		pos1 = region_values.min
-		pos2 = region_values.max
-		data = region_values.data
-
-		minetest.log("action", "[" .. raz.modname .. "] ------------------")
-		minetest.log("action", "[" .. raz.modname .. "] region (" .. counter .. ") ")
-		minetest.log("action", "[" .. raz.modname .. "] pos1 (x,y,z) "..tostring(pos1["x"])..",".. tostring(pos1["y"])..","..tostring(pos1["z"]))
-		minetest.log("action", "[" .. raz.modname .. "] pos2 (x,y,z) "..tostring(pos2["x"])..",".. tostring(pos2["y"])..","..tostring(pos2["z"]))
-		minetest.log("action", "[" .. raz.modname .. "] data ".. tostring(data))
-
-		counter = counter + 1
-	end
-end
-
--- a debug function for region_datatable
-function raz:print_region_datatable_for_id(id)
-	if raz.debug == false then
-		return
-	end
-	minetest.log("action", "[" .. raz.modname .. "] raz:print_region_datatable_for_id(id)")
-	if raz.raz_store:get_area(id) then
-		local region_data = raz:get_region_datatable(id) 
-
-		-- name of the region
-		local region_name = region_data.region_name
-		-- owner of the region
-		local owner = region_data.owner
-		-- is the region protected?
-		-- true: only owner can 'dig' in the region
-		local protected = region_data.protected
-		-- guest
-		local guests = region_data.guests --guests is a string
-		-- is this an PvP region?
-		local PvP = region_data.PvP
-		-- can Mobs damage the Player?
-		local MvP = region_data.MvP
-		-- has the region a special effect?
-		-- hot: heal over time 
-		-- fot: feed over time
-		-- bot:	breath ober time
-		-- holy: heal, feed an breath over time
-		-- dot: damage over time
-		-- starve: reduce food over time
-		-- choke: reduce breath over time
-		-- evil: steals food, blood, breath over time
-		local effect = region_data.effect
-		-- is the parent-flag set?
-		local parent = region_data.parent
-		minetest.log("action", "[" .. raz.modname .. "] Values of the region ("..id..")")
-		minetest.log("action", "[" .. raz.modname .. "] region_name: "..tostring(region_name))
-		minetest.log("action", "[" .. raz.modname .. "] owner: "..tostring(owner))
-		minetest.log("action", "[" .. raz.modname .. "] protected: "..tostring(protected))
-		minetest.log("action", "[" .. raz.modname .. "] guests: "..tostring(guests))
-		minetest.log("action", "[" .. raz.modname .. "] PvP: "..tostring(PvP))
-		minetest.log("action", "[" .. raz.modname .. "] MvP: "..tostring(MvP))
-		minetest.log("action", "[" .. raz.modname .. "] effect: "..tostring(effect))
-		minetest.log("action", "[" .. raz.modname .. "] parent: "..tostring(parent))
-	else
-		minetest.log("action", "[" .. raz.modname .. "] No Values for the Region with the ID: "..id)
-	end
-end
-
-
-
-
 
 
