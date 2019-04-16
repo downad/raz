@@ -158,6 +158,9 @@ raz = {
 		[17] = "msg: You don't have the privileg 'region_set'! ",
 		[18] = "msg: You don't have the privileg 'region_pvp'! ",
 		[19] = "msg: You don't have the privileg 'region_mvp'! ",
+		[20] = "msg: You don't have the privileg 'interact'! ",
+		[21] = "Invalid usage.  Type \"/region help {command}\" for more information.",
+
 
 
 	},
@@ -172,7 +175,10 @@ raz = {
 --
 -- the functions for this mod
 dofile(raz.modpath.."/raz_lib.lua")			-- errorhandling: done
-dofile(raz.modpath.."/raz_func.lua")		-- errorhandling: done
+dofile(raz.modpath.."/command_func.lua")	-- errorhandling: done
+
+-- load converter for ShadowNinja areas
+dofile(raz.modpath.."/convert.lua")			-- errorhandling: nothing to do
 
 -- init globalstep for the hud
 dofile(raz.modpath.."/globalstep.lua") 		-- errorhandling: nothing to do
@@ -186,8 +192,6 @@ dofile(raz.modpath.."/hud.lua")				-- errorhandling: nothing to do
 -- modify mintest-functions
 dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: nothing to do
 
--- load converter for ShadowNinja areas
-dofile(raz.modpath.."/convert.lua")			-- errorhandling: nothing to do
 
 -- set priviles and commands
 dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	

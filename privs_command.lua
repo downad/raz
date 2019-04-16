@@ -30,33 +30,66 @@ minetest.register_chatcommand("region", {
 		if not player then
 			return false, "Player not found"
 		end
+		local err
 		if param:sub(1, 4) == "help" then			
-			raz:command_help(param,name)
+			err = raz:command_help(param,name)
 		elseif param == "status" then			-- 'end' if param == 
-			raz:command_status(name,pos)
+			err = raz:command_status(name,pos)
 		elseif param == "pos1" then				-- 'end' if param == 
-			raz:command_pos(name,pos,1)
+			err = raz:command_pos(name,pos,1)
 		elseif param == "pos2" then 			-- 'end' if param == 
-			raz:command_pos(name,pos,2)
+			err = raz:command_pos(name,pos,2)
 		elseif param:sub(1, 3) == "set" then 	-- 'end' if param == 
-			raz:command_set(param, name)
+			err = raz:command_set(param, name)
 		elseif param:sub(1, 6) == "remove" then -- 'end' if param == 
-			raz:command_remove(param, name)
+			err = raz:command_remove(param, name)
 		elseif param:sub(1, 7) == "protect" then-- 'end' if param == 
-			raz:command_protect(param, name)
+			err = raz:command_protect(param, name)
 		elseif param:sub(1, 4) == "open" then	-- 'end' if param == 
-			raz:command_open(param, name)
+			err = raz:command_open(param, name)
 		elseif param:sub(1, 6) == "invite" then	-- 'end' if param == 
-			raz:command_invite(param, name)
+			err = raz:command_invite(param, name)
 		elseif param:sub(1, 3) == "ban" then	-- 'end' if param == 
-			raz:command_ban(param, name)
-		elseif param:sub(1, 12) == "change_owner" then
-
+			err = raz:command_ban(param, name)
+		elseif param:sub(1, 12) == "change_owner" then	-- 'end' if param == 
+			err = raz:command_change_owner(param, name)
 		elseif param:sub(1, 3) == "PvP" then	-- 'end' if param == 
-			raz:command_pvp(param, name)
+			err = raz:command_pvp(param, name)
 		elseif param:sub(1, 3) == "MvP" then	-- 'end' if param == 
-			raz:command_mvp(param, name)
-	
+			err = raz:command_mvp(param, name)
+
+		elseif param:sub(1, 4) == "show" then	-- 'end' if param == 
+			local numbers = string.split(param:sub(6, -1), "-")
+			if numbers[1] == nil then		
+				err = raz:region_show(name,nil,nil)
+			else
+				-- if numbers only contains strings then tonumber become 0 - no error_handling
+				err = raz:region_show(name,tonumber(numbers[1]),tonumber(numbers[2]))
+			end
+			raz:msg_handling(err) --  message and error handling
+		elseif param == "export" then -- 'end' if param == 
+			err = raz:export(raz.export_file_name)
+			raz:msg_handling(err) --  message and error handling
+		elseif param == "import" then -- 'end' if param == 
+			raz:import(raz.export_file_name)
+			raz:msg_handling(err) --  message and error handling
+		elseif param == "convert_areas" then -- 'end' if param == 
+			raz:convert_areas()		
+			raz:error_handling(err) -- error handling
+		elseif param == "import_areas" then -- 'end' if param == 
+			raz:import(raz.areas_raz_export)	
+			raz:error_handling(err) -- error handling
+		elseif param:sub(1, 6) == "parent" then
+			local value = string.split(param:sub(7, -1), " ") 
+			if value[1] == nil then
+				minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
+			elseif value[2] == "+" or value[2] == true then
+				err = raz:region_set_attribute(name, value[1], "parent", true) 
+				raz:msg_handling(err, name) --  message and error handling
+			elseif value[2] == "-" or value[2] == false then 
+				err = raz:region_set_attribute(name, value[1], "parent", false) 
+				raz:msg_handling(err, name) --  message and error handling
+			end	
 
 
 
@@ -66,6 +99,7 @@ minetest.register_chatcommand("region", {
 		else
 			minetest.chat_send_player(name, "Region chatcommands: Type \"/help region\" for more information.")
 		end -- 'end' if param == 
+		raz:msg_handling(err, name) --  message and error handling
 	end -- end function(name, param)
 })
 
