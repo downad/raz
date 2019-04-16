@@ -1,6 +1,10 @@
-
--- register globalstep
--- find the region from player position -> get_areas_for_pos
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- Globalstep: create info for the hud
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- loop all connected player
+-- find the region of the players position -> get_areas_for_pos
 -- create a string with region-name and owner an show it in the hud
 -- if there is an effect in the area - do it to the player
 local timer = 0
@@ -24,14 +28,8 @@ minetest.register_globalstep(function(dtime)
 			PvP = true
 		end
 
-		-- all values of this region
-		-- region_values.min -> table of koordinates 
-		-- region_values.max -> table of koordinates
-		-- region_values.data -> string of attributes
 		--   attributes are: region_name, owner, protected, guests, PvP, MvP, effect 
 		local region_values = ""
-		
-		
 		local protected_string = ""
 		local PvP_string = ""
 		local effect = ""
@@ -50,7 +48,11 @@ minetest.register_globalstep(function(dtime)
 				end
 				-- get region_data as table
 				local data_table = raz:get_region_datatable(region_id)
+
+				-- region_name
 				local region_name = data_table.region_name
+
+				-- owner
 				local owner = data_table.owner
 
 				-- is this region protected?
@@ -63,8 +65,8 @@ minetest.register_globalstep(function(dtime)
 
 				-- PvP - is pvp_only_in_pvp_regions = true
 				-- then PvP is only allowed in PvP-zones. 
-				-- is PvP allowed in one area at this Position PvP is allowed in all. 
-				-- mark this area as PvP
+				-- is PvP allowed in one area at this position PvP is allowed in all. 
+				-- mark this zone as PvP
 				if data_table.PvP and raz.pvp_only_in_pvp_regions then
 					PvP = true
 					PvP_string = " (PvP) "
@@ -75,7 +77,7 @@ minetest.register_globalstep(function(dtime)
 				-- PvP - is pvp_only_in_pvp_regions = false
 				-- then PvP is allowed everyther. 
 				-- is PvP = fales in one area at this Position PvP is forbidden in all. 
-				-- mark this area as PvP
+				-- mark this zone as PvP
 				if data_table.PvP and raz.pvp_only_in_pvp_regions == false then
 					PvP_string = " (PvP) "
 				end
