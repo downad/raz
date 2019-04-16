@@ -14,7 +14,7 @@
 -- msg/error handling: no
 -- return 0 = no error
 function raz:load_regions_from_file()
-	minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file()")
+--	minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file()")
 	raz.raz_store:from_file(raz.worlddir .."/".. raz.store_file_name) 
 	-- No Error
 	return 0 
@@ -29,7 +29,7 @@ end
 -- msg/error handling: 
 -- return 0 = no error
 function raz:save_regions_to_file()
-	minetest.log("action", "[" .. raz.modname .. "] raz:save_regions_to_file()")	
+--	minetest.log("action", "[" .. raz.modname .. "] raz:save_regions_to_file()")	
 	raz.raz_store:to_file(raz.worlddir .."/".. raz.store_file_name) 
 	-- No Error
 	return 0 
@@ -500,15 +500,13 @@ end
 -- return 11 -- "ERROR: You are not the owner of this region! func: raz:region_set_attribute(name, id, region_attribute, value)",
 -- return 12 -- "ERROR: No Player with this name is in the guestlist! func: raz:region_set_attribute(name, id, region_attribute, value)",
 function raz:region_set_attribute(name, id, region_attribute, value, bool)
---	minetest.log("action", "[" .. raz.modname .. "] raz:region_set_attribute(name, id, region_attribute, value)")
---	minetest.log("action", "[" .. raz.modname .. "] name "..tostring(name))
---	minetest.log("action", "[" .. raz.modname .. "] id = "..tostring(id))
---	minetest.log("action", "[" .. raz.modname .. "] region_attribute = "..tostring(region_attribute))
---	minetest.log("action", "[" .. raz.modname .. "] value = <"..tostring(value)..">")
 	local region_values = ""
 	local pos1 = ""
 	local pos2 = ""
 	local data = {}
+	-- return message
+	local err_msg = "info: Region with ID: "..id.." modified attribute "..tostring(region_attribute).." with value "..tostring(value)
+	
 	-- ckeck is this ID in AreaStore()?
 	if raz.raz_store:get_area(id) then
 		-- get region values 
@@ -558,6 +556,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 						return 15
 					end
 				end
+				err_msg = err_msg.." guest added. "
 			end 
 		elseif 	region_attribute == "guest" and bool == false then
 			if type(value) == "string" then 
@@ -571,6 +570,8 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 				-- data.guests must be an STRING!
 				local new_guest_string = raz:table_to_string(guests)
 				data.guests = new_guest_string
+				err_msg = err_msg.." guest banned. "
+
 			end 
 		elseif 	region_attribute == "PvP" then
 			if type(value) == "boolean" then 
@@ -598,8 +599,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 		if not raz:update_regions_data(id,pos1,pos2,data) then
 			return 7 -- "ERROR: in update_regions_data! func: raz:region_set_attribute(id, region_attribute, bool)", 
 		end
-
-		return "info: Region with ID: "..id.." modified attribute "..tostring(region_attribute).." with value "..tostring(value)
+		return err_msg
 	else
 		-- Error
 		return 2 -- [2] = "No region with this ID!"
@@ -763,6 +763,7 @@ end
 --+++++++++++++++++++++++++++++++++++++++
 -- input: 
 --		err as number or string
+--		err 0 -> no error, no output
 --		name as string {default: name = nil}
 -- this function handles messages and errors
 -- if name ~= nil check name and chat_send msg to name
@@ -775,10 +776,10 @@ function raz:msg_handling(err, name)
 	if err == "" or err == nil or err == 0 then
 		return 
 	end
-	minetest.log("action", "[" .. raz.modname .. "] ##########################################################")
-	minetest.log("action", "[" .. raz.modname .. "] msg_handling -err: " .. tostring(err))
-	minetest.log("action", "[" .. raz.modname .. "] type(err): " .. type(err))
-	minetest.log("action", "[" .. raz.modname .. "] name: " .. tostring(name))
+	--minetest.log("action", "[" .. raz.modname .. "] ##########################################################")
+	--minetest.log("action", "[" .. raz.modname .. "] msg_handling -err: " .. tostring(err))
+	--minetest.log("action", "[" .. raz.modname .. "] type(err): " .. type(err))
+	--minetest.log("action", "[" .. raz.modname .. "] name: " .. tostring(name))
 	
 	if type(err) == "string" then
 		-- is err an info
