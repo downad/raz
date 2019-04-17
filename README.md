@@ -38,37 +38,39 @@ roadmap
 	- clear code
 
 ## Privilegs:
-+ "region_admin" ==> modify all regions, import, export regions, convert areas.dat,
-+ "region_lv5" ==> Can set and remove effects for own regions.
-+ "region_lv4" ==> Can enable/disable MvP for own regions.
-+ "region_lv3" ==> Can enable/disable PvP for own regions.
-+ "region_lv2" ==> Can enable/disable protection and invite/ban guests on own regions.
-+ "region_lv1" ==> Can set and remove own regions.
++ "region_admin" ==> modify all regions, import, export regions, convert areas.dat, ...
++ "region_effect" ==> Can set and remove effects for own regions.
++ "region_mvp" ==> Can enable/disable MvP for own regions.
++ "region_pvp" ==> Can enable/disable PvP for own regions.
++ "region_set" ==> Can invite/ban guests or change owner of own regions.
++ "region_mark" ==> Can set, remove and rename own regions and protect and open them.
 
 ## commands
 
 |command|parameters|what does the command do|who can use is
 |------|------|-------|-------| 
-region *params*| *status*| Show a list of this regions with all data.|all players
-region_mark *params* |	*pos1* | set one corner for the region |  privileg - region_lv1
-| |	*pos2*| set the second corner for the region
-| |	*set* **region_name**| set an regon with the name **region_name**
-| |	*remove* **ID** | remove an own-region with the **ID**
-region_set *params* | *protect* <id> | Protect the region with the ID (only OWN regions) | privileg - region_lv2
- | | *open* <id> | Opens the region with the ID for all players to 'dig' (only OWN regions).| 
- | | *invite* **name** | invites player **name**. (only OWN regions) - The guest player can 'dig' and 'build' like in an own protected region.
- | | *ban* **name** | disallow the player **name** (only OWN regions) to 'dig' and 'build' like in the protected region.
-region_pvp *params* | *PvP* **true/false** | can make the zone to become an arena with PvP (globaly PvP must be enabled) | privileg - region_lv3
-region_MvP *params* | *MvP* **true/false** | can enable or disable that Mobs can damage the player | privileg - region_lv4
-region_effect *params* | *effect* **none,hot,bot,holy,dot,choke,evil** | can create an effect in a zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg - region_lv5
-region_special *parms* | *parent* | mark an region as parent, so other regions can be placed in that region | privileg - region_admin.
-| | *show* **1 - 3** | shows a list of all values from regions-data in the range **start** **-** **end**. If only **start** is given it shows the region **start**. Without **start** all regions are listed.
-| | *import* | import raz.export_file_name. 
-| | *export* | export all region to raz.export_file_name.
-| | *convert_areas* | conversts from ShadowNinja areas! - read existing areas.dat - create an raz.areas_raz_export file for import.
-| | *import_areas* | import the file: raz.areas_raz_export.
-| | *parent* **+** or **-** | enable / disable the parent-attribute of an region.
-| | *change_owner* **id** **new owner** | changes the owner from an region to **new owner**.
+region *help* | **command** | Get some infos about the use of the *command* | privileg: interact
+region *status* | no params | Get some more infos about the region at your position. | privileg: interact
+region *pos1* | no params |	Set one corner for the region |  privileg: region_mark
+region *pos2* | no params |	Set the second corner for the region |  privileg: region_mark
+region *set*  | **region_name**| Marks an region with the name **region_name** | privileg: region_mark
+region *remove* | **ID** | Remove an OWN-region with the **ID** | privileg: region_mark
+region *protect* | **ID**| Protect the region with the ID (only OWN regions) | privileg: region_mark
+region *open* | **ID** | Opens the region with the **ID** for all players to 'dig' (only OWN regions).| privileg: region_mark
+region *invite* **ID** **name** | Invites player **name** as guest in your OWN-Region with the **ID** - The guest player can 'dig' and 'build' like in an own protected region.| privileg: region_set
+region *ban* | **ID** **name** | Bans the player **name** from the guestlist of your region with the **ID**.| privileg: region_set
+region *change_owner* | **id** **new owner** | Changes the owner from your region (**ID**) to **new owner**.| privileg: region_set
+region *pvp* | **ID** **+/-** | Make your zone to become an arena with PvP (globaly PvP must be enabled) | privileg: region_pvp
+region *mvp* |  **ID** **+/-** |Enable or disable that mobs can damage the player | privileg: region_mvp
+region *effect* |**ID** **none,hot,bot,holy,dot,choke,evil** | Create an effect in your zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg: region_effect
+region *parent* | **ID** **+/-**  | Mark an region as parent. Other regions can only be placed in 'wildernesss' or in an parent region. | privileg: region_admin
+region *show* | no params | Shows a list of all regions-data values from all regions | privileg: region_admin
+	| **ID** | Shows a list of all values from regions-data in the region **ID** | privileg: region_admin
+	| **ID1** **ID2** | Shows a list off all values in the range of **ID1** to **ID2** | privileg: region_admin 
+region *import* | no params| Import the regions from raz.export_file_name. | privileg: region_admin 
+region *export* |  no params| Export all region to raz.export_file_name.| privileg: region_admin 
+region *convert_areas* |  no params| Conversts areas from ShadowNinja areas! - read existing areas.dat - create an raz.areas_raz_export file for import_areas.| privileg: region_admin 
+region *import_areas* |  no params| Import the file: raz.areas_raz_export.| privileg: region_admin 
 
 
 
