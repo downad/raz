@@ -57,16 +57,16 @@ region *set*  | **region_name**| Marks an region with the name **region_name** |
 region *remove* | **ID** | Remove an OWN-region with the **ID** | privileg: region_mark
 region *protect* | **ID**| Protect the region with the ID (only OWN regions) | privileg: region_mark
 region *open* | **ID** | Opens the region with the **ID** for all players to 'dig' (only OWN regions).| privileg: region_mark
-region *invite* **ID** **name** | Invites player **name** as guest in your OWN-Region with the **ID** - The guest player can 'dig' and 'build' like in an own protected region.| privileg: region_set
+region *invite* | **ID** **name** | Invites player **name** as guest in your OWN-Region with the **ID** - The guest player can 'dig' and 'build' like in an own protected region.| privileg: region_set
 region *ban* | **ID** **name** | Bans the player **name** from the guestlist of your region with the **ID**.| privileg: region_set
 region *change_owner* | **id** **new owner** | Changes the owner from your region (**ID**) to **new owner**.| privileg: region_set
-region *pvp* | **ID** **+/-** | Make your zone to become an arena with PvP (globaly PvP must be enabled) | privileg: region_pvp
-region *mvp* |  **ID** **+/-** |Enable or disable that mobs can damage the player | privileg: region_mvp
+region *pvp* | **ID** **+ or -** | Make your zone to become an arena with PvP (globaly PvP must be enabled) | privileg: region_pvp
+region *mvp* |  **ID** **+ or -** |Enable or disable that mobs can damage the player | privileg: region_mvp
 region *effect* |**ID** **none,hot,bot,holy,dot,choke,evil** | Create an effect in your zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg: region_effect
-region *parent* | **ID** **+/-**  | Mark an region as parent. Other regions can only be placed in 'wildernesss' or in an parent region. | privileg: region_admin
+region *parent* | **ID** **+ or -**  | Mark an region as parent. Other regions can only be placed in 'wildernesss' or in an parent region. | privileg: region_admin
 region *show* | no params | Shows a list of all regions-data values from all regions | privileg: region_admin
-	| **ID** | Shows a list of all values from regions-data in the region **ID** | privileg: region_admin
-	| **ID1** **ID2** | Shows a list off all values in the range of **ID1** to **ID2** | privileg: region_admin 
+|	| **ID** | Shows a list of all values from regions-data in the region **ID** | privileg: region_admin
+|	| **ID1** **ID2** | Shows a list off all values in the range of **ID1** to **ID2** | privileg: region_admin 
 region *import* | no params| Import the regions from raz.export_file_name. | privileg: region_admin 
 region *export* |  no params| Export all region to raz.export_file_name.| privileg: region_admin 
 region *convert_areas* |  no params| Conversts areas from ShadowNinja areas! - read existing areas.dat - create an raz.areas_raz_export file for import_areas.| privileg: region_admin 
