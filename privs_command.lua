@@ -314,7 +314,7 @@ minetest.register_chatcommand("region_special", {
 		end
 		local err = ""
 		if param:sub(1, 4) == "show" then
-			local numbers = string.split(param:sub(6, -1), "-")
+			local numbers = string.split(param:sub(6, -1), " ")
 			if numbers[1] == nil then		
 				err = raz:region_show(name,nil,nil)
 			else
