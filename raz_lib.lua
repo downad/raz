@@ -272,18 +272,81 @@ function raz:get_area_by_pos1_pos2(pos1, pos2)
 	local found = raz.raz_store:get_areas_in_area(pos1,pos2,true,true) --accept_overlap, include_borders, include_data):
 	for region_id,v in pairs(found) do
 		if region_id then
-			minetest.log("action", "[" .. raz.modname .. "] raz:get_area_by_pos1_pos2(pos1, pos2) found exist: v = "..tostring(minetest.serialize(v).." region_id = "..tostring(k)) )
-			return region_id --return_table
+			return region_id -- id of the first found area
 		end
 	end
-	minetest.log("action", "[" .. raz.modname .. "] raz:get_area_by_pos1_pos2(pos1, pos2) found not exist:"..tostring(minetest.serialize(found)) )
 	return nil
 end
 
 
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- check if the player can_add a region!
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: 
+--		name			as string (playername)
+--		region_name 	as string
+-- msg/error handling: no
+-- returns true - no error
+-- return 22 -- "msg: Your region is too small (x)!",
+-- return 23 -- "msg: Your region is too small (z)!",
+-- return 24 -- "msg: Your region is too small (y)!",
+-- return 25 -- "msg: Your region is too width (x)!",
+-- return 26 -- "msg: Your region is too width (z)!",
+-- return 27 -- "msg: Your region is too hight (y)!",
+-- retunr 28 -- "msg: There are other region in. You can not mark this region",
+function raz:player_can_mark_region(edge1, edge2, name)
+	local can_add = true
+	-- check if player is region_admin
+	-- if yes, he can place everythere, return true
+	if minetest.check_player_privs(name, { region_admin = true }) then 
+		return true
+	end
+	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region your are no region_admin!" )
+	--local edge1 = raz.command_players[name].pos1
+	--local edge2 = raz.command_players[name].pos2
+	-- check minimum
+	if math.abs(edge1.x - edge2.x) < raz.minimum_width then 
+		return 22 -- "msg: Your region is too small (x)!",
+	end
+	if math.abs(edge1.z - edge2.z) < raz.minimum_width then 
+		return 23 -- "msg: Your region is too small (z)!",
+	end
+	if math.abs(edge1.y - edge2.y) < raz.minimum_hight then 
+		return 24 -- "msg: Your region is too small (y)!",
+	end
+	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region minimum checked!" )
+	-- check maximum
+	if math.abs(edge1.x - edge2.x) >= raz.maximum_width then 
+		return 25 -- "msg: Your region is too width (x)!",
+	end
+	if math.abs(edge1.z - edge2.z) >= raz.maximum_width then 
+		return 26 -- "msg: Your region is too width (z)!",
+	end
+	if math.abs(edge1.y - edge2.y) >= raz.maximum_hight then 
+		minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region z1 - z2 = "..tostring(math.abs(edge1.y - edge2.y)) )
+		return 27 -- "msg: Your region is too hight (y)!",
+	end	
+	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region maximum checked!" )
+	
+	-- is there a region in without parent-attribute?
+	local found = raz.raz_store:get_areas_in_area(edge1,edge2,true,true) --accept_overlap, include_borders):
+	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region found regions: "..tostring(#found) )
 
+	local is_parent = false
+	for found_id,v in pairs(found) do
+		if found_id then
+			is_parent = raz:get_region_attribute(found_id, "parent")
+			minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region region ID="..tostring(found_id).." is parent: "..tostring(is_parent) )
 
-
+			if is_parent ~= true then
+				can_add = 28 -- "msg: There are other region in. You can not mark this region",
+			end
+		end
+	end
+	return can_add	
+end
 
 
 
@@ -403,6 +466,52 @@ function raz:get_region_datatable(id)
 	--	no_deserialize == false
 	local pos1,pos2,data = raz:get_region_data_by_id(id,false)
 	return data
+end
+
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- get_data_string_by_id 
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: id
+-- get the data field of a given region
+-- and compose a string 
+-- msg/error handling: 
+-- return data_string
+-- return 29 -- "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
+function raz:get_data_string_by_id(id)
+	--local pos1 = ""
+	--local pos2 = ""
+	--local data = ""
+	--local data_string = ""
+	-- check ID
+	local region_values = raz.raz_store:get_area(id,true,true)
+	if region_values ~= nil then
+		local pos1 = "["..region_values.min.x..","..region_values.min.y..","..region_values.min.z.."]"
+		local pos2 = "["..region_values.max.x..","..region_values.max.y..","..region_values.max.z.."]"
+		local data = minetest.deserialize(region_values.data)
+		local data_string = "\nID "..id..": "..data.region_name.." owned by "..data.owner.." \n( "..pos1.." / "..pos2.." )"
+		if data.protected then
+			data_string = data_string..", is protected"
+		end
+		if data.guests ~= (nil or ",") then 
+			data_string = data_string..", Guests: "..data.guests
+		end
+		if data.PvP then
+			data_string = data_string..", PvP enable"
+		end
+		if data.MvP == false then
+			data_string = data_string..", Mobs do no damage"
+		end
+		if data.effect ~="none" then
+			data_string = data_string..", effects: " ..tostring(data.effect)
+		end
+		if data.parent then
+			data_string = data_string..", is parent"
+		end
+		return data_string
+	end
+	return 29 -- "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
 end
 
 --+++++++++++++++++++++++++++++++++++++++
@@ -647,107 +756,7 @@ function raz:lines_from(file)
 	return lines
 end
 
---+++++++++++++++++++++++++++++++++++++++
---
--- Export the AreaStore() to a file 
---
---+++++++++++++++++++++++++++++++++++++++
--- input: export_file_name as string-file-path
--- Export the AreaStore table to a file
--- the export-file has this format, 3 lines: [min/pos1], [max/pos2], [data]
--- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
--- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
---	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["parent"] = false}
--- msg/error handling:
--- return 0 - no error
--- return err from io.open
--- return 13 -- "ERROR: No Table returned func: raz:export(export_file_name)", 
-function raz:export(export_file_name)
-	local file_name = raz.worlddir .."/".. export_file_name --raz.export_file_name
-	local file
-	local err
-
-	-- open/create a new file for the export
-	file, err = io.open(file_name, "w")
-	if err then	
-		--minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file_name) :"..tostring(raz:file_exists(file_name))) 
-		minetest.log("error", "[" .. raz.modname .. "] file, err = io.open(file_name, w) ERROR :"..err) 
-		return err
-	end
-	io.close(file)
-	
-	-- open file for append
-	file = io.open(file_name, "a")
-
-	--local region_values = {} 
-	local pos1 = ""
-	local pos2 = ""
-	local data = ""
-	local counter = 0
-	-- loop AreaStore and write for every region 3 lines [min/pos1], [max/pos2], [data]
-	while raz.raz_store:get_area(counter) do
-
-		--region_values = raz.raz_store:get_area(counter,true,true)
-		--pos1 = region_values.min
-		--pos2 = region_values.max
-		--data = region_values.data
-		pos1,pos2,data = raz:get_region_data_by_id(counter,true)
-		if type(pos1) ~= "table" then
-			return 13 -- "ERROR: No table returned func: raz:export(export_file_name)", 
-		end
-		counter = counter + 1
-		file:write(minetest.serialize(pos1).."\n")
-		file:write(minetest.serialize(pos2).."\n")
-		file:write(data.."\n")
-	end
-	file:close()
-	-- No Error
-	return 0
-end
-
---+++++++++++++++++++++++++++++++++++++++
---
--- Load the exported AreaStore() from file
---
---+++++++++++++++++++++++++++++++++++++++
--- input: import_file_name as string-file-path
--- msg/error handling:
--- return 0 - no error
--- return 6 -- "ERROR: File does not exist!  func: func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
-function raz:import(import_file_name)
-	local counter = 1
-	local pos1 
-	local pos2
-	local data
-
-	-- does the file exist?
-	local file = raz.worlddir .."/"..import_file_name 
-	--minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
-	if raz:file_exists(file) ~= true then
-		--minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
-		minetest.log("error", "[" .. raz.modname .. "] raz:file_exists(file) :"..file.." does not exist!") 
-		return 6 -- "ERROR: File does not exist!  func: func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
-	end		
-	-- load every line of the file 
-	local lines = raz:lines_from(file)
-
-	-- loop all lines, step 3 
-	-- set pos1, pos2 and data and raz:set_region
-	while lines[counter] do
-		-- deserialize to become a vector
-		pos1 = minetest.deserialize(lines[counter])
-		pos2 = minetest.deserialize(lines[counter+1])
-		-- is an string
-	 	data = lines[counter+2]
-
-		raz:set_region(pos1,pos2,data)
-	 	counter = counter + 3
-	end
-	-- Save AreaStore()
-	raz:save_regions_to_file()
-	-- No Error
-	return 0
-end 
+ 
 
 --#---------------------------------------
 --

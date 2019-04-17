@@ -7,6 +7,12 @@
 -- return the returnvalue from raz:areas_export(raz.areas_raz_export,converted_areas)
 function raz:convert_areas()
 	local areas = {}
+
+	-- check privileg region_admin
+	local err = minetest.check_player_privs(name, { region_admin = true })
+	if not err then 
+		return err		
+	end	
 	local file = raz.worlddir .."/".. raz.areas_file
 	-- does the file exist?
 	if raz:file_exists(file) ~= true then

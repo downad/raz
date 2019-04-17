@@ -9,10 +9,10 @@ raz = {
 	modpath = minetest.get_modpath(minetest.get_current_modname()),
 
 	-- init AreaStore
-	-- here is stored the min, max and data field of an raz. The data-field is an designed string that can be derialized to a table
+	-- here is stored the edge1, edge2 and data field of an region. The data-field is an designed string that can be derialized to a table
 	-- example:
 	-- data = "return {[\"owner\"] = \"playername\", [\"region_name\"] = \"Meine Wiese mit Haus\" , [\"protected\"] = true, 
-	--	[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\"}"
+	--	[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\",  [\"parent\"] = true}"
 	-- 	design:
 	-- 	+	owner: the owner of the region, he can modify the region-flags
 	--	+	region_name: the name of the region, shown e.g. in the hud
@@ -54,9 +54,11 @@ raz = {
 	--			MvP:	if the region is marked as MvP - zone the player can not remove MvP
 	--			effects: a zone with an effect can not become parent, no player can mark a region there
 	raz_store = AreaStore(),
+	-- these attributes are set in da data-field
 	region_attribute = {
 		"owner", "region_name", "protect", "guest", "PvP", "MvP", "effect", "parent", 
 	},
+
 	-- some defaults for the AreaStore data
 	default = {
 		protected = false,
@@ -76,6 +78,14 @@ raz = {
 		hud_stringtext_pvp = "wilderness (PvP)",
 	},
 
+	-- some minimum values for the regions
+	minimum_width = 2,			-- the smalest region for player is a square of 3 x 3
+	minimum_hight = 4,			-- the minimum high is 4 
+	maximum_width = 100,		-- for player
+	maximum_hight = 60,			-- for player
+	default_width = 3,			-- if a landrush module wille be created
+	default_hight = 3,			-- if a landrush module wille be created
+
 	-- some values for the region effects
 	effect = {
 		-- the interval of dealing effects
@@ -93,6 +103,7 @@ raz = {
 		-- loosing breath 5 per effect_time seconds 	
 		choke = 5,
 	},
+
 	-- the filename for AreaStore
 	store_file_name = "raz_store.dat",
 	export_file_name ="raz_export.dat",
@@ -101,7 +112,7 @@ raz = {
 
 	-- init saved huds 
 	player_huds = {},
-	-- som color for the hud
+	-- some color for the hud
 	color = {
 		red = "0xFF0000",
 		orange = "0xFF8C00",
@@ -111,6 +122,7 @@ raz = {
  		white = "0xFFFFFF",
 		black = "0x000000",
 	},
+
 	-- init command_players for chatcommands
 	command_players = {},
 
@@ -153,20 +165,25 @@ raz = {
 		[12] = "msg: No Player with this name is in the guestlist!",
 		[13] = "ERROR: No Table returned func: raz:export(export_file_name)", 
 		[14] = "NO PvP in this zone!",
-		[15] = "msg: A Player with this name is in the guestlist!",
+		[15] = "msg: A Player with this name is already in your guestlist!",
 		[16] = "msg: You don't have the privileg 'region_mark'! ",
 		[17] = "msg: You don't have the privileg 'region_set'! ",
 		[18] = "msg: You don't have the privileg 'region_pvp'! ",
 		[19] = "msg: You don't have the privileg 'region_mvp'! ",
 		[20] = "msg: You don't have the privileg 'interact'! ",
-		[21] = "Invalid usage.  Type \"/region help {command}\" for more information.",
-
+		[21] = "msg: Invalid usage.  Type \"/region help {command}\" for more information.",
+		[22] = "msg: Your region is too small (x)! You can not mark this region",
+		[23] = "msg: Your region is too small (z)! You can not mark this region",
+		[24] = "msg: Your region is too small (y)! You can not mark this region",
+		[25] = "msg: Your region is too width (x)! You can not mark this region",
+		[26] = "msg: Your region is too width (z)! You can not mark this region",
+		[27] = "msg: Your region is too hight (y)! You can not mark this region",
+ 		[28] = "msg: There are other region in. You can not mark this region",
+ 		[29] = "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
 
 
 	},
 
-	-- for the marker mod adapion
-	--position = {},
 }
 
 -----------------------------------
@@ -178,19 +195,19 @@ dofile(raz.modpath.."/raz_lib.lua")			-- errorhandling: done
 dofile(raz.modpath.."/command_func.lua")	-- errorhandling: done
 
 -- load converter for ShadowNinja areas
-dofile(raz.modpath.."/convert.lua")			-- errorhandling: nothing to do
+dofile(raz.modpath.."/convert.lua")			-- errorhandling: done
 
 -- init globalstep for the hud
-dofile(raz.modpath.."/globalstep.lua") 		-- errorhandling: nothing to do
+dofile(raz.modpath.."/globalstep.lua") 		-- errorhandling: done
 
 -- do effects 
-dofile(raz.modpath.."/effect_func.lua")		-- errorhandling: nothing to do
+dofile(raz.modpath.."/effect_func.lua")		-- errorhandling: done
 
 -- create an hud
-dofile(raz.modpath.."/hud.lua")				-- errorhandling: nothing to do
+dofile(raz.modpath.."/hud.lua")				-- errorhandling: done
 
 -- modify mintest-functions
-dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: nothing to do
+dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: done
 
 
 -- set priviles and commands
@@ -200,8 +217,7 @@ dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done
 
 -- load regions from file
 -- fill AreaStore()
-local err
-err = raz:load_regions_from_file()
+local err = raz:load_regions_from_file()
 raz:msg_handling(err)
 
 -- all done then ....

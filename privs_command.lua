@@ -22,7 +22,8 @@ minetest.register_privilege("region_mark", "Can set, remove and rename own regio
 
 minetest.register_chatcommand("region", {
 	description = "Call \'region help <command>\' to get more information about the chatcommand.",
-	params = "<help> <status> <pos1><pos2><set><remove><protect><open>",
+	params = "<help> <status> <own> <pos1> <pos2> <set> <remove> <protect> <open> <invite> <ban> <change_owner> "..
+			"<PvP> <MvP> <show> <export> <import> <convert_areas> <import_areas> <parent> <player>",
 	privs = "interact", -- no spezial privileg
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
@@ -35,6 +36,8 @@ minetest.register_chatcommand("region", {
 			err = raz:command_help(param,name)
 		elseif param == "status" then			-- 'end' if param == 
 			err = raz:command_status(name,pos)
+		elseif param == "own" then				-- 'end' if param == 
+			err = raz:command_own(name)
 		elseif param == "pos1" then				-- 'end' if param == 
 			err = raz:command_pos(name,pos,1)
 		elseif param == "pos2" then 			-- 'end' if param == 
@@ -57,41 +60,28 @@ minetest.register_chatcommand("region", {
 			err = raz:command_pvp(param, name)
 		elseif param:sub(1, 3) == "MvP" then	-- 'end' if param == 
 			err = raz:command_mvp(param, name)
-
 		elseif param:sub(1, 4) == "show" then	-- 'end' if param == 
-			local numbers = string.split(param:sub(6, -1), "-")
+			local numbers = string.split(param:sub(6, -1), " ")
+			local header = true
 			if numbers[1] == nil then		
-				err = raz:region_show(name,nil,nil)
+				err = raz:command_show(header,name,nil,nil)
 			else
 				-- if numbers only contains strings then tonumber become 0 - no error_handling
-				err = raz:region_show(name,tonumber(numbers[1]),tonumber(numbers[2]))
+				err = raz:command_show(header,name,tonumber(numbers[1]),tonumber(numbers[2]))
 			end
-			raz:msg_handling(err) --  message and error handling
-		elseif param == "export" then -- 'end' if param == 
+		elseif param == "export" then 			-- 'end' if param == 
 			err = raz:export(raz.export_file_name)
-			raz:msg_handling(err) --  message and error handling
-		elseif param == "import" then -- 'end' if param == 
-			raz:import(raz.export_file_name)
-			raz:msg_handling(err) --  message and error handling
-		elseif param == "convert_areas" then -- 'end' if param == 
-			raz:convert_areas()		
-			raz:error_handling(err) -- error handling
-		elseif param == "import_areas" then -- 'end' if param == 
-			raz:import(raz.areas_raz_export)	
-			raz:error_handling(err) -- error handling
+		elseif param == "import" then 			-- 'end' if param == 
+			err = raz:import(raz.export_file_name)
+		elseif param == "convert_areas" then 	-- 'end' if param == 
+			err = raz:convert_areas()					-- the function convert_areas is in the file convert.lua
+		elseif param == "import_areas" then 	-- 'end' if param == 
+			err = raz:import(raz.areas_raz_export)	
 		elseif param:sub(1, 6) == "parent" then
-			local value = string.split(param:sub(7, -1), " ") 
-			if value[1] == nil then
-				minetest.chat_send_player(name, "Invalid usage.  Type \"/help region_special\" for more information.")
-			elseif value[2] == "+" or value[2] == true then
-				err = raz:region_set_attribute(name, value[1], "parent", true) 
-				raz:msg_handling(err, name) --  message and error handling
-			elseif value[2] == "-" or value[2] == false then 
-				err = raz:region_set_attribute(name, value[1], "parent", false) 
-				raz:msg_handling(err, name) --  message and error handling
-			end	
-
-
+			err = raz:command_parent(param, name)
+		elseif param:sub(1, 6) == "player" then
+			local header = true
+			err = raz:command_player_regions(header,param, name)
 
 
 		elseif param ~= "" then 				-- if no command is found 
