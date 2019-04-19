@@ -252,8 +252,37 @@ function raz:convert_string_to_table(string, seperator)
 end
 
 
-
-
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- remove all doubles from string (list)
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: 
+--		string as string
+--		seperator as string {default: seperator = ","}
+-- msg/error handling: no
+-- return return_string (string) with the elements 
+function raz:remove_double_from_string(given_string, seperator)
+	if seperator == nil then
+		seperator = ","
+	end
+	-- convert string to table
+	minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() string = "..given_string)
+	local value_table = raz:convert_string_to_table(given_string, seperator)
+	local return_table = {}
+	for k, v in ipairs(value_table) do
+		minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() k = "..tostring(k).." v = "..tostring(v) )
+		if k then
+		    if raz:check_name_in_table(v, return_table) == false then
+				table.insert(return_table, v)
+		    end
+		end
+	end
+	-- convert talbe to string
+	local return_string = raz:table_to_string(return_table)	
+	minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() return_string = "..return_string )
+	return return_string
+end
 
 
 

@@ -180,7 +180,7 @@ raz = {
 		[27] = "msg: Your region is too hight (y)! You can not mark this region",
  		[28] = "msg: There are other region in. You can not mark this region",
  		[29] = "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
-
+		[30] = "msg: You don't have the privileg 'region_admin'! ",
 
 	},
 

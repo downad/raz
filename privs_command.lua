@@ -70,13 +70,29 @@ minetest.register_chatcommand("region", {
 				err = raz:command_show(header,name,tonumber(numbers[1]),tonumber(numbers[2]))
 			end
 		elseif param == "export" then 			-- 'end' if param == 
-			err = raz:export(raz.export_file_name)
+			-- check privileg region_admin
+			if not minetest.check_player_privs(name, { region_admin = true }) then 
+				err = 30 -- "msg: You don't have the privileg 'region_admin'! ",		
+			end
+			raz:export(raz.export_file_name)
 		elseif param == "import" then 			-- 'end' if param == 
-			err = raz:import(raz.export_file_name)
-		elseif param == "convert_areas" then 	-- 'end' if param == 
-			err = raz:convert_areas()					-- the function convert_areas is in the file convert.lua
+						-- check privileg region_admin
+			if not minetest.check_player_privs(name, { region_admin = true }) then 
+				err = 30 -- "msg: You don't have the privileg 'region_admin'! ",		
+			end
+			raz:import(raz.export_file_name)
+		elseif param == "convert_areas" then 	-- 'end' if param ==
+			-- check privileg region_admin
+			if not minetest.check_player_privs(name, { region_admin = true }) then 
+				err = 30 -- "msg: You don't have the privileg 'region_admin'! ",		
+			end	 
+			raz:convert_areas()					-- the function convert_areas is in the file convert.lua
 		elseif param == "import_areas" then 	-- 'end' if param == 
-			err = raz:import(raz.areas_raz_export)	
+			-- check privileg region_admin
+			if not minetest.check_player_privs(name, { region_admin = true }) then 
+				err = 30 -- "msg: You don't have the privileg 'region_admin'! ",		
+			end
+			raz:import(raz.areas_raz_export)	
 		elseif param:sub(1, 6) == "parent" then
 			err = raz:command_parent(param, name)
 		elseif param:sub(1, 6) == "player" then

@@ -8,11 +8,6 @@
 function raz:convert_areas()
 	local areas = {}
 
-	-- check privileg region_admin
-	local err = minetest.check_player_privs(name, { region_admin = true })
-	if not err then 
-		return err		
-	end	
 	local file = raz.worlddir .."/".. raz.areas_file
 	-- does the file exist?
 	if raz:file_exists(file) ~= true then
@@ -37,18 +32,19 @@ function raz:convert_areas()
 	
 	-- the table for the converted areas
 	local converted_areas = {}
+
 	-- the data-field of an area
 	local data_of_area = {} 
+
 	-- values for the data_of_area
-	local id_of_area = ""
-	local owner_of_area = ""
-	local area_name = ""
-	local parent_of_area = ""
-	local pos1_of_area = ""
-	local pos2_of_area = ""
-	local guest_of_area = ""
-	local guests = {}
-	local protection_of_area = true
+	local parent_id = ""
+	local parent_owner= ""
+	local parent_area_name = ""
+	local parent_parent_of_area = ""
+	local parent_pos1
+	local parent_pos2
+	local parent_guests
+	local parent_protected = true
 
 
 	-- loop all areas
@@ -58,14 +54,13 @@ function raz:convert_areas()
 		minetest.log("action", "[" .. raz.modname .. "] ###### converting - id = "..tostring(id).." ######")
 		minetest.log("action", "[" .. raz.modname .. "] ###### area = "..tostring(minetest.serialize(area)).." ######")
 		-- if area.parent == nil
-		-- 	the area has no parent, the owner is new owner 
-		--		converted area: 
-		--		fill id, owner, parent ="", pos1, pos2, guests = "", protected = true
+		-- no parent set that means this area is stand alone or parent
 		if area.parent == nil then
 			minetest.log("action", "[" .. raz.modname .. "] if area.parent == nil - id = "..tostring(id))
+			-- check converted_areas[id] --> must be nil
 			-- initialize converted_areas[id]
 			if converted_areas[id] == nil then
-				minetest.log("action", "[" .. raz.modname .. "] if converted_areas[id] == nil ID = "..tostring(id))
+				--minetest.log("action", "[" .. raz.modname .. "] if converted_areas[id] == nil ID = "..tostring(id))
 				converted_areas[id] = { 
 					id = id, 
 					owner = area.owner, 
@@ -76,194 +71,88 @@ function raz:convert_areas()
 					guests = "",
 					protected = true
 				}
-				minetest.log("action", "[" .. raz.modname .. "] **** if area.parent == nil then ****")
-				minetest.log("action", "[" .. raz.modname .. "] **** if converted_areas[id] == nil then ****")
+			else
+				minetest.log("action", "[" .. raz.modname .. "] **** if area.parent == nil ")
+				minetest.log("action", "[" .. raz.modname .. "] **** if converted_areas[id] ~= nil!  ------------> WHY????????????????? ")
 				minetest.log("action", "[" .. raz.modname .. "] **** converted_area = "..tostring(minetest.serialize(converted_areas[id])).." ****")
-
-			else -- if converted_areas[id] == nil then
-			-- converted_areas[id] exists
-			-- that can happen if guests is set, maybe parent can be set 
-			-- get all values
-				minetest.log("action", "[" .. raz.modname .. "] if converted_areas[id] else ID = "..tostring(id))
-				id_of_area = tostring(converted_areas[id].id)				-- must be the id
-				owner_of_area = tostring(converted_areas[id].owner)		-- must be "" and set with area.owner
-				parent_of_area = tostring(converted_areas[id].parent)		-- the guest initialized this converted_areas
-				pos1_of_area = (converted_areas[id].pos1)			-- check if it is the same area
-				pos2_of_area = (converted_areas[id].pos2)			-- check if it is the same area
-				if converted_areas[id].guests ~= nil then
-					guest_of_area = converted_areas[id].guests		-- the guest initialized this converted_areas
+			end
+		elseif area.parent ~= nil then
+			-- a parent is set 
+			-- is this the only parent? 
+			-- then set area.owner onto the guest list 
+			local found_parent = false
+			local id_of_parent = area.parent
+			minetest.log("action", "[" .. raz.modname .. "] **** converted_areas set! values:")
+			minetest.log("action", "[" .. raz.modname .. "] **** converted_areas set! ID = "..tostring(id) )
+			minetest.log("action", "[" .. raz.modname .. "] **** converted_areas set! area.parent = "..tostring(area.parent) )
+								
+			while found_parent == false do
+				if areas[id_of_parent].parent == nil then	-- no parent of parent
+					found_parent = true
 				else
-					guest_of_area = ""
+					id_of_parent = areas[id_of_parent].parent
 				end
-				protection_of_area = true 								-- all converted areas are proteced!
-				area_name = tostring(converted_areas[id].name)
-				-- do some checks
-				if id ~= id_of_area then
-					minetest.log("action", "[" .. raz.modname .. "] id ~= id_of_area! ID = "..tostring(id))
-				end
-				if owner_of_area ~= "" then
-					minetest.log("action", "[" .. raz.modname .. "] owner_of_area is set. WHY?! owner_of_area = "..tostring(owner_of_area))
+			end --while found_parent == false do
+			minetest.log("action", "[" .. raz.modname .. "] **** converted_areas set! id_of_parent = "..tostring(id_of_parent) )
+			-- parent ID is found, two cases
+			-- case 1, converted_area[id_of_parent] exists
+			if converted_areas[id_of_parent] ~= nil then
+				-- get guests form converted_areas 
+				--parent_owner= tostring(converted_areas[id_of_parent].owner)
+				--parent_area_name = tostring(converted_areas[id_of_parent].name)
+				--parent_parent_of_area = tostring(converted_areas[id_of_parent].parent)
+				--parent_pos1 = converted_areas[id_of_parent].pos1
+				--parent_pos2 = converted_areas[id_of_parent].pos2
+				parent_guests = converted_areas[id_of_parent].guests
+				minetest.log("action", "[" .. raz.modname .. "] **** parent values: parent_guests (before) = "..tostring(parent_guests) )
+				if parent_guests == nil or parent_guests == "" then
+					parent_guests = area.owner
 				else
-					owner_of_area = area.owner
+					parent_guests = parent_guests..","..area.owner
 				end
-				if pos1_of_area ~= area.pos1 then
-					minetest.log("action", "[" .. raz.modname .. "] area.pos1 ~= pos1 ID = "..tostring(id))
-				end
-				if pos2_of_area ~= area.pos2 then
-					minetest.log("action", "[" .. raz.modname .. "] area.pos1 ~= pos2 ID = "..tostring(id))
-				end
-				if guest_of_area == "" then
-					minetest.log("action", "[" .. raz.modname .. "] guest_of_area is empty! ID = "..tostring(id))	
-				end	
-			-- set values
-				converted_areas[id] = { 
-					id = id_of_area, 
-					owner = owner_of_area, 
-					name = area_name,
-					parent = parent_of_area,
-					pos1 = pos1_of_area,
-					pos2 = pos2_of_area,
-					guests = guest_of_area,
-					protected = true
-				}
-				minetest.log("action", "[" .. raz.modname .. "] **** if area.parent == nil then ****")
-				minetest.log("action", "[" .. raz.modname .. "] **** else converted_areas[id] == nil ****")
-				minetest.log("action", "[" .. raz.modname .. "] ****converted_area (esle area.parent == nil) = "..tostring(minetest.serialize(converted_areas[parent_of_area])).." ****")
-
-			end -- if converted_areas[id] == nil then
-		else -- if area.parent == nil then
-		-- an parent is set
-		-- that means the owner is guest in an other area
-		-- the converted_areas[parent]
-			-- initialize converted_areas[id]
-			parent_of_area = area.parent
-			if converted_areas[parent_of_area] == nil then
-				minetest.log("action", "[" .. raz.modname .. "] if converted_areas[parent_of_area] == nil ID(parent_of_area) = "..tostring(parent_of_area))
+				--parent_protected = true
+				-- set values
+				--converted_areas[id_of_parent] = { 
+				--	id = id_of_parent, 
+				--	owner = parent_owner, 
+				--	name = parent_area_name,
+				--	parent = parent_parent_of_area,
+				--	pos1 = parent_pos1,
+				--	pos2 = parent_pos2,
+				--	guests = parent_guests,
+				--	protected = true
+				--}
+				minetest.log("action", "[" .. raz.modname .. "] **** parent values: parent_guests (after) = "..tostring(parent_guests) )
+				converted_areas[id_of_parent].guests = parent_guests
+				minetest.log("action", "[" .. raz.modname .. "] **** parent values: converted_areas[id_of_parent].guests = "..tostring(converted_areas[id_of_parent].guests) )
+			-- case 2 it did not exist			
+			else --if converted_areas[id_of_parent] ~= nil then
 				converted_areas[id] = { 
 					id = id, 
 					owner = "", 
 					name = area.name,
-					parent = parent_of_area,
+					parent = "",
 					pos1 = area.pos1,
 					pos2 = area.pos2,
-					guests = area.owner,			-- the onwer is an guest of the parent
+					guests = area.owner,
 					protected = true
 				}
-				minetest.log("action", "[" .. raz.modname .. "] **** else area.parent == nil  ****")
-				minetest.log("action", "[" .. raz.modname .. "] **** if converted_areas[parent_of_area] == nil then ****")
-				minetest.log("action", "[" .. raz.modname .. "] ****converted_area = "..tostring(minetest.serialize(converted_areas[parent_of_area])).." ****")
-			else -- if converted_areas[parent_of_area] == nil then
-			-- converted_areas[parent] exists
-				-- the area has no parent == ""
-				-- the owner is a guest in the parent areas
-				minetest.log("action", "[" .. raz.modname .. "] if converted_areas[parent_of_area] - else - ID(parent_of_area) = "..tostring(parent_of_area))
-				if converted_areas[parent_of_area].parent == ""  or converted_areas[parent_of_area].parent == nil then
-					minetest.log("action", "[" .. raz.modname .. "] if converted_areas[parent_of_area].parent == \"\" ID = "..tostring(id))
-					minetest.log("action", "[" .. raz.modname .. "] parent_of_area = "..tostring(parent_of_area))
-					minetest.log("action", "[" .. raz.modname .. "] area.pos1 = "..tostring(minetest.serialize(area.pos1)))
-					minetest.log("action", "[" .. raz.modname .. "] parent.pos1 = "..tostring(minetest.serialize(converted_areas[parent_of_area].pos1)))
-		
-					-- get all values
-					id_of_area = parent_of_area											-- must be the id
-					owner_of_area = tostring(converted_areas[parent_of_area].owner)		-- must set 
-					pos1_of_area = (converted_areas[parent_of_area].pos1)			-- check if it is the same area
-					pos2_of_area = (converted_areas[parent_of_area].pos2)			-- check if it is the same area
-					if converted_areas[parent_of_area].guests ~= nil then
-						guest_of_area = converted_areas[parent_of_area].guests		-- the guest initialized this converted_areas
-					else
-						guest_of_area = ""
-					end	
-					protection_of_area = true 										-- all converted areas are proteced!
-					area_name = tostring(converted_areas[parent_of_area].name)			
-					
-					-- do some checks
-					if owner_of_area == "" then
-						minetest.log("action", "[" .. raz.modname .. "] owner_of_area is NOT set. WHY?! parent_of_area = "..tostring(parent_of_area))
-					end
-					if pos1_of_area ~= area.pos1 then
-						minetest.log("action", "[" .. raz.modname .. "] area.pos1 ~= pos1 ID = "..tostring(id))
-					end
-					if pos2_of_area ~= area.pos2 then
-						minetest.log("action", "[" .. raz.modname .. "] area.pos2 ~= pos2 ID = "..tostring(id))
-					end
-					if guest_of_area == "" then
-						minetest.log("action", "[" .. raz.modname .. "] guest_of_area is empty! ID = "..tostring(id))
-						guest_of_area = area.guests
-					else
-						guest_of_area = guest_of_area..","..area.guests
-					end	
-				-- set values
-					converted_areas[parent_of_area] = { 
-						id = id_of_area, 
-						owner = owner_of_area, 
-						name = area_name,
-						parent = parent_of_area,
-						pos1 = pos1_of_area,
-						pos2 = pos2_of_area,
-						guests = guest_of_area,
-						protected = true
-					}	
-				minetest.log("action", "[" .. raz.modname .. "] **** else area.parent == nil  ****")
-				minetest.log("action", "[" .. raz.modname .. "] **** else converted_areas[parent_of_area] == nil ****")
-				minetest.log("action", "[" .. raz.modname .. "] **** converted_area = "..tostring(minetest.serialize(converted_areas[parent_of_area])).." ****")	
-				-- the area an parent
-				-- that means an owner of an subarea invited new owners
-				-- this became a guest in the parent areas
-				else -- if converted_areas[parent_of_area].parent == ""  or converted_areas[parent_of_area].parent == nil then
-				-- get the ID from the parent and add all value into parent_of_area
-					-- get all values
-					minetest.log("action", "[" .. raz.modname .. "] if converted_areas[parent_of_area].parent - else -  converted_areas[parent_of_area].parent = "..tostring(converted_areas[parent_of_area].parent))
-					parent_of_area = converted_areas[parent_of_area].parent				-- hte parent id is the new parent ID
-					id_of_area = parent_of_area											-- must be the id
-					owner_of_area = tostring(converted_areas[parent_of_area].owner)		-- must set 
-					pos1_of_area = (converted_areas[parent_of_area].pos1)			-- check if it is the same area
-					pos2_of_area = (converted_areas[parent_of_area].pos2)			-- check if it is the same area
-					guest_of_area = converted_areas[parent_of_area].guests		-- if a guest initialized this converted_areas
-					protection_of_area = true 											-- all converted areas are proteced!
-					area_name = tostring(converted_areas[parent_of_area].name)
-					-- do some checks
-					if owner_of_area == "" then
-						minetest.log("action", "[" .. raz.modname .. "] owner_of_area is NOT set. WHY?! parent_of_area = "..tostring(parent_of_area))
-					end
-					if pos1_of_area ~= area.pos1 then
-						minetest.log("action", "[" .. raz.modname .. "] area.pos1 ~= pos1 ID = "..tostring(id))
-					end
-					if pos2_of_area ~= area.pos2 then
-						minetest.log("action", "[" .. raz.modname .. "] area.pos1 ~= pos2 ID = "..tostring(id))
-					end
-					if guest_of_area == "" or guest_of_area == nil then
-						minetest.log("action", "[" .. raz.modname .. "] guest_of_area is empty! ID = "..tostring(id))
-						if area.guest == nil or area.guest == "" then
-							guest_of_area = area.owner
-						else
-							guest_of_area = area.guests
-						end
-					else
-						guest_of_area = guest_of_area..","..area.owner					-- the owner is guest in parent area
-					end	
-				-- set values
-					converted_areas[parent_of_area] = { 
-						id = id_of_area, 
-						owner = owner_of_area, 
-						name = area_name,
-						parent = parent_of_area,
-						pos1 = pos1_of_area,
-						pos2 = pos2_of_area,
-						guests = guest_of_area,
-						protected = true
-					}	
-				end -- if converted_areas[parent_of_area].parent == ""  or converted_areas[parent_of_area].parent == nil then
-			end  -- if converted_areas[parent_of_area] == nil then 
-
- 		end -- if area.parent == nil then
-
+				minetest.log("action", "[" .. raz.modname .. "] **** if area.parent ~= nil ")
+				minetest.log("action", "[" .. raz.modname .. "] **** if converted_areas[id_of_parent] == nil!  ------------> there is no existing parent of parent!")
+				minetest.log("action", "[" .. raz.modname .. "] **** if converted_areas[id_of_parent] == nil!  ------------> creating a reagion with Guest as owner!")
+				minetest.log("action", "[" .. raz.modname .. "] **** converted_area = "..tostring(minetest.serialize(converted_areas[id])).." ****")
+			end --if converted_areas[id_of_parent] ~= nil then
+		end -- elseif area.parent ~= nil then
 	end -- for id, area in pairs(areas) do
-
 
 	-- export the converted_areas to file
 	return raz:areas_export(raz.areas_raz_export,converted_areas)
 
 end
+
+
+
+
 
 
 -- Export the AreaStore table to a file
@@ -314,7 +203,12 @@ function raz:areas_export(export_file_name, converted_areas)
 		owner = v.owner
 		region_name = v.name
 		protected =  v.protected
-		guests_string = v.guests
+		--guests_string = v.guests
+		if v.guests == "" or v.guests == nil then
+			guests_string = ""
+		else
+			guests_string = raz:remove_double_from_string(v.guests)
+		end
 		pos1 = v.pos1
 		pos2 = v.pos2
 		-- create the data-string

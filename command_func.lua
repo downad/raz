@@ -670,10 +670,7 @@ end
 function raz:export(export_file_name)
 	local file_name = raz.worlddir .."/".. export_file_name --raz.export_file_name
 	local file
-	local err = minetest.check_player_privs(name, { region_admin = true })
-	if not err then 
-		return err		
-	end	 
+
 	-- open/create a new file for the export
 	file, err = io.open(file_name, "w")
 	if err then	
@@ -727,10 +724,7 @@ function raz:import(import_file_name)
 	local pos1 
 	local pos2
 	local data
-	local err = minetest.check_player_privs(name, { region_admin = true })
-	if not err then 
-		return err		
-	end	 
+ 
 	-- does the file exist?
 	local file = raz.worlddir .."/"..import_file_name 
 	--minetest.log("action", "[" .. raz.modname .. "] raz:file_exists(file) :"..tostring(raz:file_exists(file))) 
