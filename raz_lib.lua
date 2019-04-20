@@ -192,15 +192,15 @@ end
 --
 --+++++++++++++++++++++++++++++++++++++++
 -- input: 
---		name as string
---		given_table as table
+--		given_string 	as string
+--		given_table 	as table
 -- msg/error handling: no
 -- return true if the name is in the table
 -- return false if not
-function raz:check_name_in_table(name, given_table)
+function raz:string_in_table(given_string, given_table)
   for i,v in ipairs(given_table) do
 
-    if v == name then
+    if v == given_string then
       return true
     end
 
@@ -273,7 +273,7 @@ function raz:remove_double_from_string(given_string, seperator)
 	for k, v in ipairs(value_table) do
 		minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() k = "..tostring(k).." v = "..tostring(v) )
 		if k then
-		    if raz:check_name_in_table(v, return_table) == false then
+		    if raz:string_in_table(v, return_table) == false then
 				table.insert(return_table, v)
 		    end
 		end
@@ -342,7 +342,7 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	if math.abs(edge1.z - edge2.z) < raz.minimum_width then 
 		return 23 -- "msg: Your region is too small (z)!",
 	end
-	if math.abs(edge1.y - edge2.y) < raz.minimum_hight then 
+	if math.abs(edge1.y - edge2.y) < raz.minimum_height then 
 		return 24 -- "msg: Your region is too small (y)!",
 	end
 	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region minimum checked!" )
@@ -353,13 +353,15 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	if math.abs(edge1.z - edge2.z) >= raz.maximum_width then 
 		return 26 -- "msg: Your region is too width (z)!",
 	end
-	if math.abs(edge1.y - edge2.y) >= raz.maximum_hight then 
+	if math.abs(edge1.y - edge2.y) >= raz.maximum_height then 
 		minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region z1 - z2 = "..tostring(math.abs(edge1.y - edge2.y)) )
 		return 27 -- "msg: Your region is too hight (y)!",
 	end	
 	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region maximum checked!" )
 	
-	-- is there a region in without parent-attribute?
+	-- is this region on an other region?
+	-- do all other region have the parent attrribute?
+	-- if no - return err 28
 	local found = raz.raz_store:get_areas_in_area(edge1,edge2,true,true) --accept_overlap, include_borders):
 	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region found regions: "..tostring(#found) )
 
@@ -557,7 +559,7 @@ function raz:get_region_attribute(id, region_attribute)
 	local data = raz:get_region_datatable(id)
 
 	-- check if the attribute is allowed
-	if not raz:check_name_in_table(region_attribute, raz.region_attribute) then
+	if not raz:string_in_table(region_attribute, raz.region_attribute) then
 		return 8 -- "msg: The region_attribute did not fit!",
 	end
     local return_value = ""
@@ -656,7 +658,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 			end
 		end
 		-- check if the attribute is allowed
-		if not raz:check_name_in_table(region_attribute, raz.region_attribute) then
+		if not raz:string_in_table(region_attribute, raz.region_attribute) then
 			return 8 -- "ERROR: The region_attribute dit not fit! func: raz:region_set_attribute(name, id, region_attribute, value)",
 		end
 		-- modify the attribute
@@ -688,7 +690,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 				else
 					--check	if guest/value is in string guests
 					local given_table = raz:convert_string_to_table(data.guests, ",")
-					if not raz:check_name_in_table(value, given_table) then
+					if not raz:string_in_table(value, given_table) then
 						data.guests = data.guests..","..value 
 					else
 						return 15
@@ -700,7 +702,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 			if type(value) == "string" then 
 				-- check guests
 				local guests = raz:convert_string_to_table(data.guests, ",")
-				if not raz:check_name_in_table(value, guests) then
+				if not raz:string_in_table(value, guests) then
 					return 12 -- "ERROR: No Player with this name is in the guestlist! func: raz:region_set_attribute(name, id, region_attribute, value)",
 				end
 				-- remove value from guests
@@ -726,7 +728,7 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 		elseif 	region_attribute == "effect" then
 			if type(value) == "string" then 
 				-- check effects"
-				if not raz:check_name_in_table(value, raz.region_attribute) then
+				if not raz:string_in_table(value, raz.region_effects) then
 					return 10 -- "ERROR: Wrong effect! func: raz:region_set_attribute(name, id, region_attribute, value)",
 				end 
 				data.effect = value 

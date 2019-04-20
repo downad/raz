@@ -103,7 +103,7 @@ function raz:can_interact(pos, name)
 
 			-- create a table of all owners
 			-- insert(owners, owner) in table - if the owner is unknown to the table 	
-			if raz:check_name_in_table(owner, owners) == false then
+			if raz:string_in_table(owner, owners) == false then
 				table.insert(owners, owner)	
 			end	
 
@@ -146,7 +146,7 @@ function raz:player_is_guest(name,guests_string)
 	-- convert guest_sting in guest_table
 	--local guests_table = string.split(guests_string, ",")
 	local guests_table = raz:convert_string_to_table(guests_string, ",")
-	local is_guest = raz:check_name_in_table(name, guests_table)
+	local is_guest = raz:string_in_table(name, guests_table)
 	return is_guest
 end
 

@@ -42,6 +42,8 @@ function raz:command_help(param, name)
 	elseif command == "pos2" then
 		chat_end = chat_start.."' to set your position, this is needed to mark/set your region. Go to one edge and call the command \'region pos1\',"..
 			" go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region.  [privileg: region_mark]"
+	elseif command == "set_y" then
+		chat_end = chat_start.."' to set the y-values of your region to 90% of the max_height. 1/3 down and 2/3 up.  [privileg: region_mark]"
 	elseif command == "set"	then
 		chat_end = chat_start.." {region_name}' to mark a region with the name {region_name}. This regions is NOT protected! Go to one edge and call "..
 			"the command \'region pos1\', go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region.  [privileg: region_mark]"
@@ -74,7 +76,8 @@ function raz:command_help(param, name)
 			"So a city can be protected and name but players can place there own regions. [privileg: region_admin]"
 	elseif command == "player" then
 		chat_end = chat_start.." {player_name}' show a list of all regions of this player! [privileg: region_admin]"
-
+	elseif command == "effect" then
+		chat_end = chat_start.." {hot,bot,holy,dor,choke,evil}' set an effect in his region. Effects are hot {heal ofer time}, bot {breath over time}, holy, dot, choke, evil! [privileg: region_admin]"
 
 
 
@@ -154,6 +157,62 @@ function raz:command_pos(name,pos,edge)
 			raz.command_players[name].pos2 = pos
 		end
 		minetest.chat_send_player(name, "Position 2: " .. minetest.pos_to_string(pos))
+	end
+	return 0
+end
+
+
+-----------------------------------------
+--
+-- command set_y
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region set_y'
+-- modifies y1 and y2 to 90% of max_height
+-- input:
+--		name 	(string) 	of the player
+-- msg/error handling:
+-- return err if privileg is missing
+-- return 0 - no error
+function raz:command_set_y(name)
+
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return err
+	end
+	if not raz.command_players[name] or not raz.command_players[name].pos1 then
+		minetest.chat_send_player(name, "Position 1 missing, use \"/region pos1\" to set.")
+	elseif not raz.command_players[name].pos2 then
+		minetest.chat_send_player(name, "Position 2 missing, use \"/region pos2\" to set.")
+	else
+		local pos1 = raz.command_players[name].pos1
+		local pos2 = raz.command_players[name].pos2
+		minetest.chat_send_player(name, "Position 1 = "..minetest.serialize(pos1))
+		minetest.chat_send_player(name, "Position 2 = "..minetest.serialize(pos2))
+		-- find the down and upper edge		
+		-- what is missing to 90% of maximum_height?
+		local y_diff =  math.abs(raz.maximum_height * 0.9) - math.abs(pos1.y - pos2.y) 
+		-- 1/3 to the down
+		local y_min = math.abs(y_diff / 3)
+		-- 2/3 into the sky
+		local y_max = y_diff - y_min
+		minetest.chat_send_player(name, "y_diff = "..minetest.serialize(y_diff))
+		-- a max_height check is not necessary. if the region is to height the min and max will be reduced
+		if pos1.y < pos2.y then
+			pos1.y = pos1.y - y_min
+			pos2.y = pos2.y + y_max
+		else
+			pos1.y = pos1.y + y_max
+			pos2.y = pos2.y - y_min
+		end
+		raz.command_players[name] = { pos1 = pos1, pos2 = pos2 }
+		minetest.chat_send_player(name, "after maximum: Position 1 = "..minetest.serialize(pos1))
+		minetest.chat_send_player(name, "after maximum: Position 2 = "..minetest.serialize(pos2))
+
+		minetest.chat_send_player(name, "The height of pos1/pos2 is modified!")
 	end
 	return 0
 end
@@ -792,6 +851,44 @@ function raz:command_parent(param, name)
 	else	
 		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help mvp\" for more information.")
 		return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
+	end
+	return err
+end
+
+
+-----------------------------------------
+--
+-- command effect
+-- privileg: region_admin
+--
+-----------------------------------------
+-- called: 'region effect {id} {effect}
+-- input:
+--		param 	(string)
+--		name 	(string) 	of the player
+-- msg/error handling:
+-- return err if privileg is missing
+-- return err = return from region_set_attribute
+-- return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
+function raz:command_effect(param, name)
+	-- check privileg
+	local err = minetest.check_player_privs(name, { region_admin = true })
+	if not err then 
+		return err		
+	end	
+	-- get the args after effect
+	-- value[1]: it must be an id of an region 
+	-- value[2]: must be the effect
+	local value = string.split(param:sub(7, -1), " ") 
+	if value[1] == nil or value[2] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help effect\" for more information.")
+		return 21 -- invalie useage
+	else
+		-- check effect is in raz.region_effects
+		if not raz:string_in_table(value[2], raz.region_effects) then
+			return 31 -- "ERROR: The effect dit not fit! ",
+		end
+		err = raz:region_set_attribute(name, value[1], "effect", value[2])
 	end
 	return err
 end

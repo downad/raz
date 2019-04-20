@@ -54,9 +54,13 @@ raz = {
 	--			MvP:	if the region is marked as MvP - zone the player can not remove MvP
 	--			effects: a zone with an effect can not become parent, no player can mark a region there
 	raz_store = AreaStore(),
-	-- these attributes are set in da data-field
+	-- these attributes are set in the data-field
 	region_attribute = {
 		"owner", "region_name", "protect", "guest", "PvP", "MvP", "effect", "parent", 
+	},
+	-- these effects can be set
+	region_effects = {
+		"hot", "bot", "fot", "holy", "dot", "starve", "choke", "evil", 
 	},
 
 	-- some defaults for the AreaStore data
@@ -80,11 +84,11 @@ raz = {
 
 	-- some minimum values for the regions
 	minimum_width = 2,			-- the smalest region for player is a square of 3 x 3
-	minimum_hight = 4,			-- the minimum high is 4 
+	minimum_height = 4,			-- the minimum high is 4 
 	maximum_width = 100,		-- for player
-	maximum_hight = 60,			-- for player
+	maximum_height = 60,			-- for player
 	default_width = 3,			-- if a landrush module wille be created
-	default_hight = 3,			-- if a landrush module wille be created
+	default_height = 3,			-- if a landrush module wille be created
 
 	-- some values for the region effects
 	effect = {
@@ -181,6 +185,7 @@ raz = {
  		[28] = "msg: There are other region in. You can not mark this region",
  		[29] = "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
 		[30] = "msg: You don't have the privileg 'region_admin'! ",
+		[31] = "ERROR: The effect dit not fit!",
 
 	},
 
