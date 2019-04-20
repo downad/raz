@@ -76,7 +76,10 @@ minetest.register_chatcommand("region", {
 			if not minetest.check_player_privs(name, { region_admin = true }) then 
 				err = 30 -- "msg: You don't have the privileg 'region_admin'! ",		
 			end
-			raz:export(raz.export_file_name)
+			err = raz:export(raz.export_file_name)
+			if err == 0 then
+				raz:msg_handling(32, name)  -- 32 success
+			end
 		elseif param == "import" then 			-- 'end' if param == 
 						-- check privileg region_admin
 			if not minetest.check_player_privs(name, { region_admin = true }) then 

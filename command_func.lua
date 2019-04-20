@@ -728,7 +728,7 @@ end
 -- return err form minetest.check_player_privs(name, { region_admin = true })
 function raz:export(export_file_name)
 	local file_name = raz.worlddir .."/".. export_file_name --raz.export_file_name
-	local file
+	local file, err
 
 	-- open/create a new file for the export
 	file, err = io.open(file_name, "w")
