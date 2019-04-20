@@ -22,7 +22,7 @@ minetest.register_privilege("region_mark", "Can set, remove and rename own regio
 
 minetest.register_chatcommand("region", {
 	description = "Call \'region help <command>\' to get more information about the chatcommand.",
-	params = "<help> <status> <own> <pos1> <pos2> <set> <remove> <protect> <open> <invite> <ban> <change_owner> "..
+	params = "<help> <status> <own> <pos1> <pos2> <set_y> <set> <remove> <protect> <open> <invite> <ban> <change_owner> "..
 			"<PvP> <MvP> <show> <export> <import> <convert_areas> <import_areas> <parent> <player>",
 	privs = "interact", -- no spezial privileg
 	func = function(name, param)
@@ -42,6 +42,8 @@ minetest.register_chatcommand("region", {
 			err = raz:command_pos(name,pos,1)
 		elseif param == "pos2" then 			-- 'end' if param == 
 			err = raz:command_pos(name,pos,2)
+		elseif param == "set_y" then 			-- 'end' if param == 
+			err = raz:command_set_y(name)
 		elseif param:sub(1, 3) == "set" then 	-- 'end' if param == 
 			err = raz:command_set(param, name)
 		elseif param:sub(1, 6) == "remove" then -- 'end' if param == 
@@ -98,7 +100,9 @@ minetest.register_chatcommand("region", {
 		elseif param:sub(1, 6) == "player" then
 			local header = true
 			err = raz:command_player_regions(header,param, name)
-
+		elseif param:sub(1, 6) == "effect" then
+			err = raz:command_effect(param, name)
+			
 
 		elseif param ~= "" then 				-- if no command is found 
 			minetest.chat_send_player(name, "Invalid usage.  Type \"/help region\" for more information.")
