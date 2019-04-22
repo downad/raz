@@ -267,7 +267,7 @@ function raz:remove_double_from_string(given_string, seperator)
 		seperator = ","
 	end
 	-- convert string to table
-	minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() string = "..given_string)
+	--minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() string = "..given_string)
 	local value_table = raz:convert_string_to_table(given_string, seperator)
 	local return_table = {}
 	for k, v in ipairs(value_table) do
@@ -280,7 +280,7 @@ function raz:remove_double_from_string(given_string, seperator)
 	end
 	-- convert talbe to string
 	local return_string = raz:table_to_string(return_table)	
-	minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() return_string = "..return_string )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:remove_double_from_string() return_string = "..return_string )
 	return return_string
 end
 
@@ -332,7 +332,7 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	if minetest.check_player_privs(name, { region_admin = true }) then 
 		return true
 	end
-	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region your are no region_admin!" )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region your are no region_admin!" )
 	--local edge1 = raz.command_players[name].pos1
 	--local edge2 = raz.command_players[name].pos2
 	-- check minimum
@@ -345,7 +345,7 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	if math.abs(edge1.y - edge2.y) < raz.minimum_height then 
 		return 24 -- "msg: Your region is too small (y)!",
 	end
-	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region minimum checked!" )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region minimum checked!" )
 	-- check maximum
 	if math.abs(edge1.x - edge2.x) >= raz.maximum_width then 
 		return 25 -- "msg: Your region is too width (x)!",
@@ -354,28 +354,18 @@ function raz:player_can_mark_region(edge1, edge2, name)
 		return 26 -- "msg: Your region is too width (z)!",
 	end
 	if math.abs(edge1.y - edge2.y) >= raz.maximum_height then 
-		minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region z1 - z2 = "..tostring(math.abs(edge1.y - edge2.y)) )
+		--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region z1 - z2 = "..tostring(math.abs(edge1.y - edge2.y)) )
 		return 27 -- "msg: Your region is too hight (y)!",
 	end	
-	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region maximum checked!" )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region maximum checked!" )
 	
-	-- is this region on an other region?
-	-- do all other region have the parent attrribute?
+	-- is this region on an other region / do all other region have the plot attrribute?
 	-- if no - return err 28
-	local found = raz.raz_store:get_areas_in_area(edge1,edge2,true,true) --accept_overlap, include_borders):
-	minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region found regions: "..tostring(#found) )
-
-	local is_parent = false
-	for found_id,v in pairs(found) do
-		if found_id then
-			is_parent = raz:get_region_attribute(found_id, "parent")
-			minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region region ID="..tostring(found_id).." is parent: "..tostring(is_parent) )
-
-			if is_parent ~= true then
-				can_add = 28 -- "msg: There are other region in. You can not mark this region",
-			end
-		end
+	local is_plot = raz:region_is_plot(edge1, edge2)
+	if is_plot == false then
+		can_add = 28 -- "msg: There are other region in. You can not mark this region",
 	end
+
 	return can_add	
 end
 
@@ -403,7 +393,7 @@ end
 -- the flag -do_not_check_player = true allows to create regions for owners who are not player - maybe because you will convert an areas.dat for an other system.
 -- msg/error handling:
 -- return data_string for insert_area(edge1, edge2, DATA) as string
-function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent,do_not_check_player)
+function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 	minetest.log("action", "[" .. raz.modname .. "] raz:create_data(...)"	)
 	-- check input-values
 	local player = minetest.get_player_by_name(owner)
@@ -428,8 +418,11 @@ function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effec
 	if not type(effect) == "string" or effect == nil then
 		effect = raz.default.effect
 	end
-	if not type(parent) == "boolean" or parent == nil then
-		parent = raz.default.parent
+	if not type(plot) == "boolean" or plot == nil then
+		plot = raz.default.plot
+	end
+	if not type(city) == "boolean" or city == nil then
+		city = raz.default.city
 	end
 	-- only for debugging
 	if raz.debug == true then
@@ -438,6 +431,8 @@ function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effec
 		minetest.log("action", "[" .. raz.modname .. "] owner: "..tostring(owner))
 		minetest.log("action", "[" .. raz.modname .. "] protected: "..tostring(protected))
 		minetest.log("action", "[" .. raz.modname .. "] guests: "..tostring(guests_string))
+		minetest.log("action", "[" .. raz.modname .. "] plot: "..tostring(plot))
+		minetest.log("action", "[" .. raz.modname .. "] city: "..tostring(city))
 		minetest.log("action", "[" .. raz.modname .. "] PvP: "..tostring(PvP))
 		minetest.log("action", "[" .. raz.modname .. "] MvP: "..tostring(MvP))
 		minetest.log("action", "[" .. raz.modname .. "] effect: "..tostring(effect))
@@ -445,7 +440,7 @@ function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effec
 	-- create the datastring
 	local data_string = "return {[\"owner\"] = \""..owner.."\", [\"region_name\"] = \""..region_name.."\", [\"protected\"] = "..tostring(protected)..
 		", [\"guests\"] = \""..guests_string.."\", [\"PvP\"] = "..tostring(PvP)..", [\"MvP\"] = "..tostring(MvP)..
-		", [\"effect\"] = \""..effect.."\", [\"parent\"] = "..tostring(parent).."}" 
+		", [\"effect\"] = \""..effect.."\", [\"plot\"] = "..tostring(plot)..", [\"city\"] = "..tostring(city).."}" 
  
 	return data_string
 end
@@ -464,7 +459,7 @@ end
 -- return pos1,pos2 and data (as 3 tables)
 -- return 3 - no region with this ID
 function raz:get_region_data_by_id(id,no_deserialize)
-	--minetest.log("action", "[" .. raz.modname .. "] raz:get_region_data_by_id(id) ID: "..tostring(id).." raz.raz_store:get_area(id) = "..tostring(raz.raz_store:get_area(id) )) 
+--	minetest.log("action", "[" .. raz.modname .. "] raz:get_region_data_by_id(id) ID: "..tostring(id).." value = "..minetest.serialize(raz.raz_store:get_area(id,true,true) )) 
 	local region_values = ""
 	local pos1 = ""
 	local pos2 = ""
@@ -511,11 +506,6 @@ end
 -- return data_string
 -- return 29 -- "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
 function raz:get_data_string_by_id(id)
-	--local pos1 = ""
-	--local pos2 = ""
-	--local data = ""
-	--local data_string = ""
-	-- check ID
 	local region_values = raz.raz_store:get_area(id,true,true)
 	if region_values ~= nil then
 		local pos1 = "["..region_values.min.x..","..region_values.min.y..","..region_values.min.z.."]"
@@ -537,8 +527,11 @@ function raz:get_data_string_by_id(id)
 		if data.effect ~="none" then
 			data_string = data_string..", effects: " ..tostring(data.effect)
 		end
-		if data.parent then
-			data_string = data_string..", is parent"
+		if data.plot then
+			data_string = data_string..", is building plot"
+		end
+		if data.city then
+			data_string = data_string..", is a city"
 		end
 		return data_string
 	end
@@ -557,7 +550,8 @@ end
 -- return return_value
 function raz:get_region_attribute(id, region_attribute)
 	local data = raz:get_region_datatable(id)
-
+	minetest.log("action", "[" .. raz.modname .. "] get_region_attribute! input ID= "..tostring(id).." region_attribute = "..region_attribute )  
+		
 	-- check if the attribute is allowed
 	if not raz:string_in_table(region_attribute, raz.region_attribute) then
 		return 8 -- "msg: The region_attribute did not fit!",
@@ -576,8 +570,10 @@ function raz:get_region_attribute(id, region_attribute)
 		return_value = data.PvP
 	elseif 	region_attribute == "MvP" then
 		return_value = data.MvP
-	elseif 	region_attribute == "parent" then
-		return_value = data.parent
+	elseif 	region_attribute == "plot" then
+		return_value = data.plot
+	elseif 	region_attribute == "city" then
+		return_value = data.city
 	elseif 	region_attribute == "effect" then
 		return_value = data.effect
 	end 
@@ -626,6 +622,67 @@ function raz:get_combat_attributs_for_pos(pos)
 		end
 	end
 	return PvP,MvP
+end
+
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- region_is_plot(pos1,pos2)
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: pos1,pos 	as table
+-- msg/error handling: no 
+-- return true  - if the player can mark this region
+-- 		a region is a building plot if 
+--			all regions have - plot = true
+--			one region has city = true and all of the others regions have plot = true 
+-- return false - the region is not allowed to build in 
+-- return nil	- no region in there
+function raz:region_is_plot(pos1,pos2)
+-- get all regions in this box
+	local found = raz.raz_store:get_areas_in_area(pos1,pos2,true,true) --accept_overlap, include_borders, include_data):
+	local is_city = false
+	local is_city_plot = false
+	local is_plot = true
+	local count = 0
+	-- loop all region
+	for region_id,v in pairs(found) do
+		-- if in one region the city-attribut is set is counts for all region there!
+		minetest.log("action", "[" .. raz.modname .. "] region_is_plot! region_id "..tostring(region_id) )  
+--		minetest.log("action", "[" .. raz.modname .. "] region_is_plot! city "..tostring(raz:get_region_attribute(region_id,"city")) )  
+--		minetest.log("action", "[" .. raz.modname .. "] region_is_plot! plot "..tostring(raz:get_region_attribute(region_id,"plot")) )  
+
+		if raz:get_region_attribute(region_id,"city") == true then
+			is_city = true
+			if raz:get_region_attribute(region_id,"plot") == true then
+				is_city_plot = true
+			end
+		else
+			if not raz:get_region_attribute(region_id,"plot") == true then
+				is_plot = false
+			end			
+		end
+		-- are there more than 1 region
+		count = count + 1 
+	end
+	-- check:
+	minetest.log("action", "[" .. raz.modname .. "] region_is_plot! count "..tostring(count) )  
+	minetest.log("action", "[" .. raz.modname .. "] region_is_plot! plot "..tostring(is_plot) )  
+	minetest.log("action", "[" .. raz.modname .. "] region_is_plot! city "..tostring(is_city) )  
+	if count == 0 then
+		return nil			-- no regions found
+	end
+	-- 1 region - then the plot must be set
+	if count == 1 then
+		if is_city_plot == true or is_plot == true then
+			return true
+		end	
+	-- 2 or more region - then city in one region and plot in all of the other region has to be set.
+	else
+		if is_city == true and is_plot == true then
+			return true
+		end		
+	end	
+	return false 	-- no building plot
 end
 
 -- function region_set_attribute(name, id, region_attribute, value, bool)
@@ -721,11 +778,14 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 			if type(value) == "boolean" then 
 				data.MvP = value 
 			end 
-		elseif 	region_attribute == "parent" then
+		elseif 	region_attribute == "plot" then
 			if type(value) == "boolean" then 
-				data.parent = value 
+				data.plot = value 
 			end 
-		elseif 	region_attribute == "effect" then
+		elseif 	region_attribute == "city" then
+			if type(value) == "boolean" then 
+				data.city = value 
+			end 		elseif 	region_attribute == "effect" then
 			if type(value) == "string" then 
 				-- check effects"
 				if not raz:string_in_table(value, raz.region_effects) then
@@ -839,7 +899,7 @@ function raz:msg_handling(err, name)
 		if type(err) == "number" then
 			minetest.chat_send_player(name, raz.error_text[err])
 		else
-			minetest.chat_send_player(name, err)
+			minetest.chat_send_player(name, tostring(err) )
 		end
 	end
 end
@@ -909,8 +969,10 @@ function raz:print_region_datatable_for_id(id)
 		-- choke: reduce breath over time
 		-- evil: steals food, blood, breath over time
 		local effect = region_data.effect
-		-- is the parent-flag set?
-		local parent = region_data.parent
+		-- is the plot-flag set?
+		local plot = region_data.plot
+		-- is the city-flag set?
+		local city = region_data.city
 		minetest.log("action", "[" .. raz.modname .. "] Values of the region ("..id..")")
 		minetest.log("action", "[" .. raz.modname .. "] region_name: "..tostring(region_name))
 		minetest.log("action", "[" .. raz.modname .. "] owner: "..tostring(owner))
@@ -919,7 +981,8 @@ function raz:print_region_datatable_for_id(id)
 		minetest.log("action", "[" .. raz.modname .. "] PvP: "..tostring(PvP))
 		minetest.log("action", "[" .. raz.modname .. "] MvP: "..tostring(MvP))
 		minetest.log("action", "[" .. raz.modname .. "] effect: "..tostring(effect))
-		minetest.log("action", "[" .. raz.modname .. "] parent: "..tostring(parent))
+		minetest.log("action", "[" .. raz.modname .. "] plot: "..tostring(plot))
+		minetest.log("action", "[" .. raz.modname .. "] city: "..tostring(city))
 	else
 		minetest.log("action", "[" .. raz.modname .. "] No Values for the Region with the ID: "..id)
 	end

@@ -12,17 +12,17 @@ raz = {
 	-- here is stored the edge1, edge2 and data field of an region. The data-field is an designed string that can be derialized to a table
 	-- example:
 	-- data = "return {[\"owner\"] = \"playername\", [\"region_name\"] = \"Meine Wiese mit Haus\" , [\"protected\"] = true, 
-	--	[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\",  [\"parent\"] = true}"
+	--	[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\",  [\"plot\"] = true}"
 	-- 	design:
 	-- 	+	owner: the owner of the region, he can modify the region-flags
 	--	+	region_name: the name of the region, shown e.g. in the hud
 	--	+	protected: is region protected?
 	--			default: false	
 	-- 			true: only owner and guest can 'dig' in the region
-	--			true: if the parent region is protected, then owners region must be procted
+	--			true: if the plot region is protected, then owners region must be procted
 	--	+	guest:	players who can 'dig' in the raz. thy can not modify the region		
 	--			default: ""
-	--			someone is guest in an region if he is guest in that region or he is guest in the parent region
+	--			someone is guest in an region if he is guest in that region or he is guest in the plot region
 	-- 	+	PvP: is PvP allowed in this region? (global PvP must be enable)
 	--			default: false
 	-- 			true: PvP is allowed in the region - players can damage other players
@@ -44,19 +44,18 @@ raz = {
 	-- 			starve: reduce food over time 				-- will implement later
 	-- 			choke: reduce breath over time
 	-- 			evil: steals blood, breath (and food) over time
-	--	+ 	parent: if the region is marked as parent, other can set a region in that region.
+	--	+ 	plot: if the region is marked as plot, other can set a region in that region.
 	--			default: false
-	--			e.g. the admin marks a city, the player can build houses in the city.
-	--			special flags:
-	--			protected: 	protected by admin, the player can mark a region, that region is protected for the player owner, he can not remove protected
-	--						only marked by the admin, the player can mark a region, that region is protected for the player but he can(!) remove protected
-	--			PvP:	if the region is marked as PvP - zone the player can not remove PvP
-	--			MvP:	if the region is marked as MvP - zone the player can not remove MvP
-	--			effects: a zone with an effect can not become parent, no player can mark a region there
+	--			e.g. the admin marks building plot, so players can build houses there.
+	--	+ 	city: mark an greather region as city an set some building plots on it.
+	--			default: false
+	--			e.g. the admin marks a city, the player can build houses in the building plots
+	-- all this attributs can used individual or parallel.
+	-- 		if you want, you can mark a region as city, with out PvP and harmful monsters and then build in this an PvP-arena
 	raz_store = AreaStore(),
 	-- these attributes are set in the data-field
 	region_attribute = {
-		"owner", "region_name", "protect", "guest", "PvP", "MvP", "effect", "parent", 
+		"owner", "region_name", "protect", "guest", "PvP", "MvP", "effect", "plot", "city", 
 	},
 	-- these effects can be set
 	region_effects = {
@@ -70,7 +69,8 @@ raz = {
 		PvP = false,
 		MvP = true,
 		effect = "none",
-		parent = false,
+		plot = false,
+		city = false,
 		-- if 'digging in an protected region damage the player
 		-- default: true
 		do_damage_for_violation = true ,
@@ -229,7 +229,7 @@ raz:msg_handling(err)
 minetest.log("action", "[" .. raz.modname .. "] successfully loaded .lua!")
 
 
-
+ raz:delete_region(49)
 
 
 

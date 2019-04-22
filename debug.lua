@@ -19,9 +19,9 @@ local guests = {}
 local PvP = true					-- default = false		
 local MvP = true					-- default = true
 local effect = "none"				-- default = none
-local parent = true					-- default = false
+local plot = true					-- default = false
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -44,9 +44,9 @@ guests = {}
 PvP = false						-- default = false		
 MvP = true						-- default = true
 effect = "dot"					-- default = none
-parent = false					-- default = false	
+plot = false					-- default = false	
 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -69,10 +69,10 @@ guests = {}
 PvP = false						-- default = false		
 MvP = true						-- default = true
 effect = "none"					-- default = none
-parent = false					-- default = false	
+plot = false					-- default = false	
 
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -95,10 +95,10 @@ guests = {}
 PvP = false						-- default = false		
 MvP = true						-- default = true
 effect = "holy"					-- default = none
-parent = false					-- default = false	
+plot = false					-- default = false	
 
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -122,10 +122,10 @@ guests = {}
 PvP = true						-- default = false		
 MvP = true						-- default = true
 effect = "evil"					-- default = none
-parent = false					-- default = false	
+plot = false					-- default = false	
 
 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,parent)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
