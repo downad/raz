@@ -91,11 +91,9 @@ function raz:can_interact(pos, name)
 			guests = data_table.guests --<- this is a string!
 			is_protected = data_table.protected
 
-			-- do same checks
-			-- e.g. if a garden is protected and parent and in there is an house. 
-			-- The house keeper has invited a guest to build with, the invited guest can build 
 
-			-- must thie be ckecked?
+
+			-- must this be ckecked?
 			-- if the region is protected (one of the region in an region) then all regions are protected
 			if is_protected == true then
 				protected = true

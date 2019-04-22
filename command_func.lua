@@ -71,9 +71,12 @@ function raz:command_help(param, name)
 		chat_end = chat_start.."' to convert an area from ShadowNinja areas to an export-file for raz! [privileg: region_admin]"
 	elseif command == "import_areas" then
 		chat_end = chat_start.."' to import areas-export-file! [privileg: region_admin]"
-	elseif command == "parent" then
-		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-). If the parent-attribut set, a player can mark regions 'in' there. "..
+	elseif command == "plot" then
+		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-). If the plot-attribut is set, a player can mark regions 'in' there. "..
 			"So a city can be protected and name but players can place there own regions. [privileg: region_admin]"
+	elseif command == "city" then
+		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-). If the city-attribut is set, the region_admin can mark regions 'in' there with the building plot-attribute."..
+			"So a city can be protected and named (by region_admin) but players can place there own regions. [privileg: region_admin]"
 	elseif command == "player" then
 		chat_end = chat_start.." {player_name}' show a list of all regions of this player! [privileg: region_admin]"
 	elseif command == "effect" then
@@ -615,7 +618,7 @@ function raz:command_show(header, name,list_start,list_end)
 	local err = minetest.check_player_privs(name, { region_admin = true })
 	if header ~= "status" then
 		if not err then 
-			return err		
+			return 30 -- "msg: You don't have the privileg 'region_admin'! ",		
 		end	 
 	end
 
@@ -683,7 +686,7 @@ function raz:command_player_regions(header,param, name)
 	local err = minetest.check_player_privs(name, { region_admin = true })
 	if header ~= "own" then
 		if not err then 
-			return err		
+			return 30 -- "msg: You don't have the privileg 'region_admin'! ",		
 		end	 
 	end
 	-- check if player_name exists
@@ -720,12 +723,11 @@ end
 -- the export-file has this format, 3 lines: [min/pos1], [max/pos2], [data]
 -- 		return {["y"] = -15, ["x"] = -5, ["z"] = 154}
 -- 		return {["y"] = 25, ["x"] = 2, ["z"] = 160}
---		return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["parent"] = false}
+--		return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["plot"] = false}
 -- msg/error handling:
 -- return 0 - no error
 -- return err from io.open
 -- return 13 -- "ERROR: No Table returned func: raz:export(export_file_name)", 
--- return err form minetest.check_player_privs(name, { region_admin = true })
 function raz:export(export_file_name)
 	local file_name = raz.worlddir .."/".. export_file_name --raz.export_file_name
 	local file, err
@@ -777,7 +779,6 @@ end
 -- msg/error handling:
 -- return 0 - no error
 -- return 6 -- "ERROR: File does not exist!  func: func: raz:import(import_file_name) - File: "..minetest.get_worldpath() .."/raz_store.dat (if not changed)",
--- return err form minetest.check_player_privs(name, { region_admin = true })
 function raz:import(import_file_name)
 	local counter = 1
 	local pos1 
@@ -817,39 +818,83 @@ end
 
 -----------------------------------------
 --
--- command parent +/-
+-- command plot +/-
 -- privileg: region_mvp
 --
 -----------------------------------------
--- called: 'region parent {id} {+/-}
+-- called: 'region plot {id} {+/-}
 -- input:
 --		param 	(string)
 --		name 	(string) 	of the player
 -- msg/error handling:
--- return err if privileg is missing
 -- return err = return from region_set_attribute
 -- return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
 -- return err form minetest.check_player_privs(name, { region_admin = true })
-function raz:command_parent(param, name)
+function raz:command_plot(param, name)
 	-- check privileg
 	local err = minetest.check_player_privs(name, { region_admin = true })
 	if not err then 
-		return err		
+		return 30 -- "msg: You don't have the privileg 'region_admin'! ",		
 	end	 
+		
 	-- get the args after invite
 	-- value[1]: it must be an id of an region that is owned by name
 	-- value[2]: must be + or -
-	local value = string.split(param:sub(7, -1), " ") 
+	local value = string.split(param:sub(5, -1), " ") 
+	minetest.log("action", "[" .. raz.modname .. "] command_plot! inputvalue param = "..tostring(param).." name = "..name )  
+	minetest.log("action", "[" .. raz.modname .. "] command_plot! value = "..tostring(value) )  
 	if value[1] == nil then
-		minetest.chat_send_player(name, "Invalid usage.  Type \"/region parent\" for more information.")
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region plot\" for more information.")
 	elseif value[2] == "+" or value[2] == true then
-		err = raz:region_set_attribute(name, value[1], "parent", true) 
+		err = raz:region_set_attribute(name, value[1], "plot", true) 
 		--raz:msg_handling(err, name) --  message and error handling
 	elseif value[2] == "-" or value[2] == false then 
-		err = raz:region_set_attribute(name, value[1], "parent", false) 
+		err = raz:region_set_attribute(name, value[1], "plot", false) 
 		--raz:msg_handling(err, name) --  message and error handling
 	else	
-		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help mvp\" for more information.")
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help plot\" for more information.")
+		return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
+	end
+	return err
+end
+
+-----------------------------------------
+--
+-- command city ID +/-
+-- privileg: region_mvp
+--
+-----------------------------------------
+-- called: 'region city {id} {+/-}
+-- input:
+--		param 	(string)
+--		name 	(string) 	of the player
+-- msg/error handling:
+-- return err = return from region_set_attribute
+-- return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
+-- return err form minetest.check_player_privs(name, { region_admin = true })
+function raz:command_city(param, name)
+	-- check privileg
+	local err = minetest.check_player_privs(name, { region_admin = true })
+	if not err then 
+		return 30 -- "msg: You don't have the privileg 'region_admin'! ",		
+	end	 
+		
+	-- get the args after invite
+	-- value[1]: it must be an id of an region that is owned by name
+	-- value[2]: must be + or -
+	local value = string.split(param:sub(5, -1), " ") 
+	minetest.log("action", "[" .. raz.modname .. "] command_city! inputvalue param = "..tostring(param).." name = "..name )  
+	minetest.log("action", "[" .. raz.modname .. "] command_city! value = "..tostring(value) )  
+	if value[1] == nil then
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region city\" for more information.")
+	elseif value[2] == "+" or value[2] == true then
+		err = raz:region_set_attribute(name, value[1], "city", true) 
+		--raz:msg_handling(err, name) --  message and error handling
+	elseif value[2] == "-" or value[2] == false then 
+		err = raz:region_set_attribute(name, value[1], "city", false) 
+		--raz:msg_handling(err, name) --  message and error handling
+	else	
+		minetest.chat_send_player(name, "Invalid usage.  Type \"/region help city\" for more information.")
 		return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
 	end
 	return err
@@ -874,7 +919,7 @@ function raz:command_effect(param, name)
 	-- check privileg
 	local err = minetest.check_player_privs(name, { region_admin = true })
 	if not err then 
-		return err		
+		return 30 -- "msg: You don't have the privileg 'region_admin'! ",		
 	end	
 	-- get the args after effect
 	-- value[1]: it must be an id of an region 
