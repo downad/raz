@@ -187,6 +187,7 @@ raz = {
 		[30] = "msg: You don't have the privileg 'region_admin'! ",
 		[31] = "ERROR: The effect dit not fit!",
 		[32] = "msg: Success - regions exported!",
+		[33] = "msg: You don't have the privileg 'region_effect'! ",
 	},
 
 }

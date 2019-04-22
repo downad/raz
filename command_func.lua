@@ -80,7 +80,7 @@ function raz:command_help(param, name)
 	elseif command == "player" then
 		chat_end = chat_start.." {player_name}' show a list of all regions of this player! [privileg: region_admin]"
 	elseif command == "effect" then
-		chat_end = chat_start.." {hot,bot,holy,dor,choke,evil}' set an effect in his region. Effects are hot {heal ofer time}, bot {breath over time}, holy, dot, choke, evil! [privileg: region_admin]"
+		chat_end = chat_start.." {hot,bot,holy,dor,choke,evil}' set an effect in his region. Effects are hot {heal ofer time}, bot {breath over time}, holy, dot, choke, evil! [privileg: region_effect]"
 
 
 
@@ -917,10 +917,11 @@ end
 -- return 21 -- "Invalid usage.  Type \"/region help {command}\" for more information.",
 function raz:command_effect(param, name)
 	-- check privileg
-	local err = minetest.check_player_privs(name, { region_admin = true })
-	if not err then 
-		return 30 -- "msg: You don't have the privileg 'region_admin'! ",		
-	end	
+	local err = raz:has_region_effect(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return err
+	end
 	-- get the args after effect
 	-- value[1]: it must be an id of an region 
 	-- value[2]: must be the effect
@@ -1024,4 +1025,23 @@ function raz:has_region_mvp(name)
 		return true		
 	end
 	return 19 -- "You dont have the privileg 'region_mvp' "
+end
+-----------------------------------------
+--
+-- player has_region_mvp
+--
+-----------------------------------------
+-- check if name has the privileg or is admin
+-- input:
+--		name 		as string-- msg/error handling: 
+-- return true
+-- return 19 - for error
+function raz:has_region_effect(name)
+	if minetest.check_player_privs(name, { region_effect = true }) then 
+		return true		
+	end
+	if minetest.check_player_privs(name, { region_admin = true }) then 
+		return true		
+	end
+	return 33 -- "You dont have the privileg 'region_effect' "
 end

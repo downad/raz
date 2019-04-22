@@ -57,6 +57,7 @@ region *status* | no params | Get some more infos about the region at your posit
 region *own* | no params | Get a list of all your regions. | privileg: region_mark
 region *pos1* | no params |	Set one corner for the region |  privileg: region_mark
 region *pos2* | no params |	Set the second corner for the region |  privileg: region_mark
+region *set_y* | no params | Set the y-values of your region to 90% of the max_height. 1/3 down and 2/3 up. |  privileg: region_mark
 region *set*  | **region_name**| Marks an region with the name **region_name** | privileg: region_mark
 region *remove* | **ID** | Remove an OWN-region with the **ID** | privileg: region_mark
 region *protect* | **ID**| Protect the region with the ID (only OWN regions) | privileg: region_mark
@@ -67,7 +68,8 @@ region *change_owner* | **id** **new_owner** | Changes the owner from your regio
 region *pvp* | **ID** **+ or -** | Enable(+) or disable(-) PvP in your region to become an arena (globaly PvP must be enabled) | privileg: region_pvp
 region *mvp* |  **ID** **+ or -** | Enable(+) or disable(-) that mobs can damage the player | privileg: region_mvp
 region *effect* |**ID** **none, hot, bot, holy, dot, choke, evil** | Create an effect in your zone.<br> hot = heal over time,<br> dot = damage over time,<br>...|privileg: region_effect
-region *parent* | **ID** **+ or -**  | Mark(+) or unmark(-) an region as parent. Other regions can only be placed in 'wildernesss' or in an parent region. | privileg: region_admin
+region *plot* | **ID** **+ or -**  | Mark(+) or unmark(-) an region as building plot. Other regions can only be placed in 'wildernesss' or in an building plot region. | privileg: region_admin
+region *city* | **ID** **+ or -**  | Mark(+) or unmark(-) an region as city. In an city-zone you can playce building plots. | privileg: region_admin
 region *show* | no params | Shows a list of all regions-data values from all regions | privileg: region_admin
 |	| **ID** | Shows a list of all values from regions-data in the region **ID** | privileg: region_admin
 |	| **ID1** **ID2** | Shows a list off all values in the range of **ID1** to **ID2** | privileg: region_admin 
