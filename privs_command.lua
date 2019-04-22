@@ -62,6 +62,8 @@ minetest.register_chatcommand("region", {
 			err = raz:command_pvp(param, name)
 		elseif param:sub(1, 3) == "MvP" then	-- 'end' if param == 
 			err = raz:command_mvp(param, name)
+		elseif param:sub(1, 6) == "effect" then
+			err = raz:command_effect(param, name)
 		elseif param:sub(1, 4) == "show" then	-- 'end' if param == 
 			local numbers = string.split(param:sub(6, -1), " ")
 			local header = true
@@ -105,8 +107,6 @@ minetest.register_chatcommand("region", {
 		elseif param:sub(1, 6) == "player" then
 			local header = true
 			err = raz:command_player_regions(header,param, name)
-		elseif param:sub(1, 6) == "effect" then
-			err = raz:command_effect(param, name)
 			
 
 		elseif param ~= "" then 				-- if no command is found 
