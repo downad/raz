@@ -42,9 +42,9 @@ end
 -----------------------------------------
 -- insert a new region, update AreaStore, save AreaStore
 -- pos1 and pos2 must be an vector
--- data must be an designed string like
--- because in the datafield could only stored a string
--- data = "return {[\"owner\"] = \"adownad\", [\"protected\"] = true, [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\", [\"region_name\"] = \"Meine Wiese mit Haus\"}"
+-- data must be an designed string 
+--  	use: raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
+-- because in the datafield could only stored a string	
 -- msg/error handling: 
 -- return id of new region
 function raz:set_region(pos1,pos2,data)
@@ -169,21 +169,22 @@ end
 --
 --+++++++++++++++++++++++++++++++++++++++
 --
--- convert a table to a list of strings, there is no key!
+-- convert a table to a string, there is no key!
 --
 --+++++++++++++++++++++++++++++++++++++++
--- input: given_table
+-- input: 
+--		given_table		as table
 -- msg/error handling: no
--- return string as string
+-- return string 		as string
 function raz:table_to_string(given_table)
 	--minetest.log("action", "[" .. raz.modname .. "] raz:table_to_string(table)")
-	local string = ""
+	local return_string = ""
 	for k, v in pairs(given_table) do
 		if k then
-			string = string..v..","
+			return_string = return_string..v..","
 		end
 	end
-	return string
+	return return_string
 end
 
 --+++++++++++++++++++++++++++++++++++++++
@@ -214,7 +215,7 @@ end
 --
 --+++++++++++++++++++++++++++++++++++++++
 -- input: 
---		value as string
+--		value 		as string
 --		given_table as table
 -- msg/error handling: no
 -- return table with the removed element
@@ -236,8 +237,8 @@ end
 --
 --+++++++++++++++++++++++++++++++++++++++
 -- input: 
---		string as string
---		seperator as string {default: seperator = ","}
+--		string 		as string
+--		seperator 	as string {default: seperator = ","}
 -- msg/error handling: no
 -- return value_tables with the elements
 function raz:convert_string_to_table(string, seperator)
@@ -261,7 +262,7 @@ end
 --		string as string
 --		seperator as string {default: seperator = ","}
 -- msg/error handling: no
--- return return_string (string) with the elements 
+-- return return_string ( as string) with the elements 
 function raz:remove_double_from_string(given_string, seperator)
 	if seperator == nil then
 		seperator = ","
@@ -317,7 +318,8 @@ end
 --		name			as string (playername)
 --		region_name 	as string
 -- msg/error handling: no
--- returns true - no error
+-- returns true - no error or region_admin
+-- return 16 -- "msg: You don't have the privileg 'region_mark'! ",
 -- return 22 -- "msg: Your region is too small (x)!",
 -- return 23 -- "msg: Your region is too small (z)!",
 -- return 24 -- "msg: Your region is too small (y)!",
@@ -327,14 +329,14 @@ end
 -- retunr 28 -- "msg: There are other region in. You can not mark this region",
 function raz:player_can_mark_region(edge1, edge2, name)
 	local can_add = true
-	-- check if player is region_admin
-	-- if yes, he can place everythere, return true
+	-- check if player privilegs
+	-- if region_admin, he can place everythere, return true
 	if minetest.check_player_privs(name, { region_admin = true }) then 
 		return true
+	elseif not raz:has_region_mark(name) then
+		return 16 -- "msg: You don't have the privileg 'region_mark'! ",
 	end
-	--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region your are no region_admin!" )
-	--local edge1 = raz.command_players[name].pos1
-	--local edge2 = raz.command_players[name].pos2
+
 	-- check minimum
 	if math.abs(edge1.x - edge2.x) < raz.minimum_width then 
 		return 22 -- "msg: Your region is too small (x)!",
@@ -345,7 +347,7 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	if math.abs(edge1.y - edge2.y) < raz.minimum_height then 
 		return 24 -- "msg: Your region is too small (y)!",
 	end
-	--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region minimum checked!" )
+
 	-- check maximum
 	if math.abs(edge1.x - edge2.x) >= raz.maximum_width then 
 		return 25 -- "msg: Your region is too width (x)!",
@@ -354,13 +356,11 @@ function raz:player_can_mark_region(edge1, edge2, name)
 		return 26 -- "msg: Your region is too width (z)!",
 	end
 	if math.abs(edge1.y - edge2.y) >= raz.maximum_height then 
-		--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region z1 - z2 = "..tostring(math.abs(edge1.y - edge2.y)) )
 		return 27 -- "msg: Your region is too hight (y)!",
 	end	
-	--minetest.log("action", "[" .. raz.modname .. "] raz:player_can_mark_region maximum checked!" )
-	
+
+	-- check building plot	
 	-- is this region on an other region / do all other region have the plot attrribute?
-	-- if no - return err 28
 	local is_plot = raz:region_is_plot(edge1, edge2)
 	if is_plot == false then
 		can_add = 28 -- "msg: There are other region in. You can not mark this region",
@@ -369,8 +369,21 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	return can_add	
 end
 
-
-
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- create_landrush_edges!
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: 
+--		pos			as table
+-- msg/error handling: no
+-- returns pos1, pos2
+function raz:create_landrush_edges(pos)
+	-- vector(x,y,z) y -> up/down
+	local pos1 = vector.new(pos.x + (raz.landrush_width/-2), pos.y + (raz.landrush_height/-2), pos.z + (raz.landrush_width/-2) ) 	-- down
+	local pos2 = vector.new(pos.x + (raz.landrush_width/2), pos.y + (raz.landrush_height/2), pos.z + (raz.landrush_width/2) )		-- up
+	return pos1, pos2
+end
 --#---------------------------------------
 --
 -- the functions AreaStore() data field 
@@ -387,7 +400,7 @@ end
 -- data must be an designed string like
 -- because in the datafield could only stored a string
 -- data = "return {[\"owner\"] = \"playername\", [\"region_name\"] = \"Meine Wiese mit Haus\" , [\"protected\"] = true, 
---			[\"guests\"] = \"none/table\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\"}"
+--			[\"guests\"] = \"none/string\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\", [\"plot\"] = false, [\"city\"] = true}"
 -- owner and region_name are MUST
 -- if the rest is missing default will set.
 -- the flag -do_not_check_player = true allows to create regions for owners who are not player - maybe because you will convert an areas.dat for an other system.
@@ -624,6 +637,93 @@ function raz:get_combat_attributs_for_pos(pos)
 	return PvP,MvP
 end
 
+
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- get_owner_for_pos(pos)
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: pos
+-- get the data field attributes owner of a given posision 
+-- msg/error handling: no 
+-- return owner 	as string
+function raz:get_owner_for_pos(pos)
+	local owner = ""
+	local data_table = {}
+	-- get all region for this position
+	for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+		if regions_id then
+			data_table = raz:get_region_datatable(regions_id)
+			owner = owner..", "..raz:get_region_attribute(regions_id, "owner")
+		end
+	end
+	if owner == "" then
+		return nil
+	else
+		return owner
+	end
+end
+
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- get_region_center_by_name_and_pos(name, pos)
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input:
+--		name 	as string
+--		pos		as vector
+-- get the first area of player at pos 
+-- calculate the center and return center_pos 
+-- msg/error handling: no 
+-- return center_pos as vector
+-- retrun 34 -- "msg: There are no region at that pos! ",
+function raz:get_region_center_by_name_and_pos(name, pos)
+	local data_table = {}
+	local center_pos = 34 -- "msg: There are no region at that pos! ",
+	local pos1 , pos2
+	-- get all region for this position
+	for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do
+		if regions_id then
+			pos1, pos2, data_table = raz:get_region_data_by_id(regions_id)
+			if name == raz:get_region_attribute(regions_id, "owner") then
+				center_pos = raz:get_center_of_box(pos1, pos2)
+			end
+		end
+	end
+	return pos1, pos2, center_pos
+end
+
+
+function raz:get_center_of_box(pos1, pos2)
+	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box pos1 = "..minetest.serialize(pos1) )  
+	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box pos2 = "..minetest.serialize(pos2) )  
+
+	local x,y,z
+	x = math.abs( pos1.x - pos2.x ) / 2
+	y = math.abs( pos1.y - pos2.y ) / 2
+	z = math.abs( pos1.z - pos2.z ) / 2
+	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box x = "..tostring(x) )  
+	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box x = "..tostring(y) )  
+	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box x = "..tostring(z) )  
+
+	if pos1.x < pos2.x then
+		x = x + pos1.x
+	else
+		x = x + pos2.x
+	end
+	if pos1.y < pos2.y then
+		y = y + pos1.y
+	else
+		y = y + pos2.y
+	end
+	if pos1.z < pos2.z then
+		z = z + pos1.z
+	else
+		z = z + pos2.z
+	end
+
+	return vector.new( x, y, z)
+end
 --+++++++++++++++++++++++++++++++++++++++
 --
 -- region_is_plot(pos1,pos2)

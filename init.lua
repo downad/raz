@@ -87,8 +87,8 @@ raz = {
 	minimum_height = 4,			-- the minimum high is 4 
 	maximum_width = 100,		-- for player
 	maximum_height = 60,			-- for player
-	default_width = 3,			-- if a landrush module wille be created
-	default_height = 3,			-- if a landrush module wille be created
+	landrush_width = 16,			-- if a landrush module will be created
+	landrush_height = 16,			-- if a landrush module will be created
 
 	-- some values for the region effects
 	effect = {
@@ -111,6 +111,7 @@ raz = {
 	-- the filename for AreaStore
 	store_file_name = "raz_store.dat",
 	export_file_name ="raz_export.dat",
+	backup_file_name ="raz_backup_",
 	areas_file = "areas.dat",
 	areas_raz_export = "areas_raz_export.dat",
 
@@ -188,6 +189,7 @@ raz = {
 		[31] = "ERROR: The effect dit not fit!",
 		[32] = "msg: Success - regions exported!",
 		[33] = "msg: You don't have the privileg 'region_effect'! ",
+		[34] = "msg: There are no region at that pos! ",
 	},
 
 }
@@ -215,11 +217,11 @@ dofile(raz.modpath.."/hud.lua")				-- errorhandling: done
 -- modify mintest-functions
 dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: done
 
-
 -- set priviles and commands
 dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	
 
-
+-- set landrush items
+dofile(raz.modpath.."/items.lua")
 
 -- load regions from file
 -- fill AreaStore()
@@ -230,7 +232,7 @@ raz:msg_handling(err)
 minetest.log("action", "[" .. raz.modname .. "] successfully loaded .lua!")
 
 
- raz:delete_region(49)
+-- raz:delete_region(49)
 
 
 

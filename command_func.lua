@@ -32,8 +32,12 @@ function raz:command_help(param, name)
 	minetest.log("action", "[" .. raz.modname .. "] raz:command_help command: "..tostring(command)) 
 	local chat_start = "Call command 'region "..command  
 	if command == "help" then
+		chat_end = chat_start.." {command}' to get some more infos about this command. [privileg: interact]"
 	elseif command == "status" then
 		chat_end = chat_start.."' to get some more infos about the region at your position. [privileg: interact]"
+	elseif command == "border" then
+		chat_end = chat_start.."' to make your region visible. [privileg: interact]"..
+			"The region_admin can call \'region border {name}\' to make the region of player name visible. [privileg: region_admin]"
 	elseif command == "own" then
 		chat_end = chat_start.."' show a list of all your regions. [privileg: region_mark]"
 	elseif command == "pos1" then
@@ -48,7 +52,9 @@ function raz:command_help(param, name)
 		chat_end = chat_start.." {region_name}' to mark a region with the name {region_name}. This regions is NOT protected! Go to one edge and call "..
 			"the command \'region pos1\', go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region.  [privileg: region_mark]"
 	elseif command == "remove" then
-		chat_end = chat_start.." {id}' to remove YOUR region with the ID = {id}! [privileg: region_mark]"
+		chat_end = chat_start.." {id}' to remove YOUR region with the ID = {id}! [privileg: region_mark]"..
+			"The region_admin can call \'region remove all\' to remove ALL regions! A backup of th regions will be created \'raz_backup_{DATE}\'."..
+			"Rename the backup to reimport the regions. [privileg: region_admin]"
 	elseif command == "protect" then
 		chat_end = chat_start.." {id}' to protect your own region. [privileg: region_mark]"
 	elseif command == "open" then
@@ -63,6 +69,9 @@ function raz:command_help(param, name)
 		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-) PvP in your region. [privileg: region_pvp]"
 	elseif command == "mvp" then
 		chat_end = chat_start.." {id} {+ or -}' to enable (+) or disable (-) MvP in your region. Disable MvP if mobs can not harm player! [privileg: region_mvp]"
+	elseif command == "effect" then
+		chat_end = chat_start.." {hot,bot,holy,dor,choke,evil}' set an effect in his region. Effects are hot {heal ofer time}, bot {breath over time}, "..
+			"holy, dot, choke, evil! [privileg: region_effect]"
 	elseif command == "export" then
 		chat_end = chat_start.."' to export the AreaStore to an file! [privileg: region_admin]"
 	elseif command == "import" then
@@ -79,9 +88,7 @@ function raz:command_help(param, name)
 			"So a city can be protected and named (by region_admin) but players can place there own regions. [privileg: region_admin]"
 	elseif command == "player" then
 		chat_end = chat_start.." {player_name}' show a list of all regions of this player! [privileg: region_admin]"
-	elseif command == "effect" then
-		chat_end = chat_start.." {hot,bot,holy,dor,choke,evil}' set an effect in his region. Effects are hot {heal ofer time}, bot {breath over time}, holy, dot, choke, evil! [privileg: region_effect]"
-
+	
 
 
 
@@ -325,6 +332,20 @@ function raz:command_remove(param, name)
 			end
 		else
 			minetest.chat_send_player(name, "There is no region with ID: "..tostring(id).."!")					
+		end
+	elseif param:sub(8, -1) == "all" and minetest.check_player_privs(name, { region_admin = true }) then
+		-- make a backup of all region, use date
+		local backup = raz.backup_file_name..(os.date("%y%m%d_%H%M%S")..".dat" )
+		err = raz:export(backup)
+		minetest.log("action", "[" .. raz.modname .. "] remove all - backupfile = "..backup)
+		if err then
+			minetest.log("action", "[" .. raz.modname .. "] remove all - backup done!")
+			while raz.raz_store:get_area(1) do
+				raz:delete_region(1)
+			end
+			raz.raz_store = AreaStore()
+		else
+			raz:msg_handling( err, name ) --  message and error handling
 		end
 	else
 		minetest.chat_send_player(name, "Region with the ID: "..tostring(id).." is unknown!")
@@ -815,7 +836,55 @@ function raz:import(import_file_name)
 end
 
 
+-----------------------------------------
+--
+-- command border
+-- privileg: interact
+--
+-----------------------------------------
+-- called: 'region border {name}' id you are region_admin
+-- shows a box over the region
+-- input:
+--		param 	(string)
+--		name 	(string) 	of the player
+-- msg/error handling: 
+-- return 20 --"msg: You don't have the privileg 'interact'! ",
+-- return 0	-- no error
+function raz:command_border(param, name)
+	-- check privs
+	if not minetest.check_player_privs(name, { interact = true }) then 
+		return 20 --"msg: You don't have the privileg 'interact'! ",		
+	end
+	local is_region_admin = minetest.check_player_privs(name, { region_admin = true })
+	-- get values of param
+	local value = string.split(param:sub(7, -1), " ") 
 
+	--local player = minetest.get_player_by_name(owner)
+	local player = minetest.env:get_player_by_name(name)
+	local pos = player:getpos()		
+	local owner = name
+	if is_region_admin and value[1] ~= nil then
+		--if minetest.player_exists(value[1]) == true then
+			owner = value[1]
+		--end
+	end 
+	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border owner = "..owner )  
+	local pos1, pos2, center = raz:get_region_center_by_name_and_pos(owner, pos)
+	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border pos1 = "..minetest.serialize(pos1) ) 
+	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border pos2 = "..minetest.serialize(pos2) ) 
+	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border center = "..tostring(center) ) 
+ 
+	if type(center) == "table" then 
+		minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border pos = "..minetest.serialize(pos) )  
+		minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border center = "..minetest.serialize(center) )  
+		center.y = (pos.y-1)
+		local box = minetest.env:add_entity(center, "raz:showarea")	
+		box:set_properties({
+				visual_size={x=math.abs(pos1.x - pos2.x), y=math.abs(pos1.y - pos2.y), z=math.abs(pos1.z - pos2.z)},
+				collisionbox = {pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z},
+			})
+	end
+end
 -----------------------------------------
 --
 -- command plot +/-
