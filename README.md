@@ -2,8 +2,10 @@
 Regions, Areas and Zones for Minetest
 
 ## Inspired by 
-+ areas - ShadowNinja
-+ pvp_areas - pvp_areas
++ areas - ShadowNinja - https://github.com/minetest-mods/areas
++ pvp_areas - everamzah - https://github.com/everamzah/pvp_areas
++ landrush - Bremaweb - https://github.com/Bremaweb/landrush
+
 
 # The Idea
 a mod to do them all
@@ -31,14 +33,17 @@ evil | both: damage and choke over time
 - v 0.6 - more commands for modifying the attributs, changing the privilegs
 - v 0.7 - PvP and MvP wokrs
 - v 0.8 - marker supports raz
+- v 0.9 - landrush module started 
 
-roadmap
-	- PvP, MvP attribute (done)
-	- PvP - module (done)
-	- items from mod marker (done, downads marker now supports raz)
-	- more commands
-	- clear code
-	- some controls for placing regions, e.g. max regions/player, default high, region can only placed in 'wilderness' or 'parent'
+### Roadmap
+- PvP, MvP attribute (done)
+- PvP - module (done)
+- items from mod marker (done, downads marker now supports raz)
+- more commands (border,plot, city)
+- clear code (in work) 
+- color the hud
+- make effect for food work
+- some controls for placing regions, e.g. max regions/player, default high, region can only placed in 'wilderness' or 'parent'
 
 ## Privilegs:
 + "region_admin" ==> modify all regions, import, export regions, convert areas.dat, ...
@@ -48,18 +53,21 @@ roadmap
 + "region_set" ==> Can invite/ban guests or change owner of own regions.
 + "region_mark" ==> Can set, remove and rename own regions and protect and open them.
 
-## commands
+## Commands
 
 |command|parameters|what does the command do|who can use is
 |------|------|-------|-------| 
 region *help* | **command** | Get some infos about the use of the *command* | privileg: interact
 region *status* | no params | Get some more infos about the region at your position. | privileg: interact
+region *border* | no params | Make your region at this position visible. | privileg: interact
+| | **name** | Make the region of player**name**  visible. | privileg: region_admin
 region *own* | no params | Get a list of all your regions. | privileg: region_mark
 region *pos1* | no params |	Set one corner for the region |  privileg: region_mark
 region *pos2* | no params |	Set the second corner for the region |  privileg: region_mark
 region *set_y* | no params | Set the y-values of your region to 90% of the max_height. 1/3 down and 2/3 up. |  privileg: region_mark
 region *set*  | **region_name**| Marks an region with the name **region_name** | privileg: region_mark
 region *remove* | **ID** | Remove an OWN-region with the **ID** | privileg: region_mark
+| | **all** | Removes **all** region, a backup will be created. | privileg: region_admin
 region *protect* | **ID**| Protect the region with the ID (only OWN regions) | privileg: region_mark
 region *open* | **ID** | Opens the region with the **ID** for all players to 'dig' (only OWN regions).| privileg: region_mark
 region *invite* | **ID** **name** | Invites player **name** as guest in your OWN-Region with the **ID** - The guest player can 'dig' and 'build' like in an own protected region.| privileg: region_set
@@ -80,5 +88,12 @@ region *import_areas* |  no params| Import the file: raz.areas_raz_export.| priv
 region *player* | **name** | Shows a list of all regions from  Player **name**.| privileg: region_admin
 
 
+### Licence
+GNU General Public License v3.0
 
-
+## Textures and Models
+Bremaweb/landrush models
+- landrush_showarea.png
+- landrush_showarea.x
+Bremaweb/landrush textures
+- landrush_landclaim.png
