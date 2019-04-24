@@ -1,3 +1,25 @@
+--[[
+Region Areas and Zones
+	an areas (or region or zone) mod that allows player (depending on privilegs)
+	- to mark your (region / areas / zones) with name
+	- to protect (region / areas / zones)
+	- to invite / ban other players to interact in protected (region / areas / zones)
+	- to allow / disallow PvP in (region / areas / zones)
+	- to allow / disable Mobdamage [MvP] in (region / areas / zones)
+	- to set (region / areas / zones) with an effect like hot, dot, holy, evil
+	
+	an (region / areas / zones) mod that allows the region_admin (privileg)
+	- to create an named city (maybe portected)
+	- set some building plots for the playes, so player can protect ther own (region / areas / zones) in the city
+
+	
+Copyright (c) 2019 
+	ralf Weinert <downad@freenet.de>
+Source Code: 	
+	https://github.com/downad/raz
+License: 
+	GPLv3
+]]--
 --register items and enitiy
 -- got this from https://github.com/Bremaweb/landrush
 -- textures and model from Bremaweb/landrush

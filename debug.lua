@@ -1,6 +1,29 @@
+--[[
+Region Areas and Zones
+	an areas (or region or zone) mod that allows player (depending on privilegs)
+	- to mark your (region / areas / zones) with name
+	- to protect (region / areas / zones)
+	- to invite / ban other players to interact in protected (region / areas / zones)
+	- to allow / disallow PvP in (region / areas / zones)
+	- to allow / disable Mobdamage [MvP] in (region / areas / zones)
+	- to set (region / areas / zones) with an effect like hot, dot, holy, evil
+	
+	an (region / areas / zones) mod that allows the region_admin (privileg)
+	- to create an named city (maybe portected)
+	- set some building plots for the playes, so player can protect ther own (region / areas / zones) in the city
+
+	
+Copyright (c) 2019 
+	ralf Weinert <downad@freenet.de>
+Source Code: 	
+	https://github.com/downad/raz
+License: 
+	GPLv3
+]]--
 
 -- set some regions
 local data = ""
+local do_not_check_player = false 	-- default: check player
 
 -- test 1
 -- vector(x,y,z) y -> up/down
@@ -21,7 +44,7 @@ local MvP = true					-- default = true
 local effect = "none"				-- default = none
 local plot = true					-- default = false
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -45,8 +68,9 @@ PvP = false						-- default = false
 MvP = true						-- default = true
 effect = "dot"					-- default = none
 plot = false					-- default = false	
+city = false					-- fefault = false
 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -70,9 +94,11 @@ PvP = false						-- default = false
 MvP = true						-- default = true
 effect = "none"					-- default = none
 plot = false					-- default = false	
+city = false					-- fefault = false
+
 
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -96,9 +122,11 @@ PvP = false						-- default = false
 MvP = true						-- default = true
 effect = "holy"					-- default = none
 plot = false					-- default = false	
+city = false					-- fefault = false
+
 
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -123,9 +151,11 @@ PvP = true						-- default = false
 MvP = true						-- default = true
 effect = "evil"					-- default = none
 plot = false					-- default = false	
+city = false					-- fefault = false
 
 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot)
+
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
@@ -143,36 +173,4 @@ raz:print_regions()
 
 minetest.log("action", "[" .. raz.modname .. "] some regions created!")
 
--- Regiontest 
-local test_id = 0
-local counter = 0
---while raz.raz_store:get_area(counter) do
---	raz:print_region_datatable_for_id(counter)
---	counter = counter + 1
---end
 
-
------------------------- old
--- Export the AreaStore table to a file
---[[
-function raz:export_2()
-	raz:update_regions()
-	local region_values = minetest.serialize(raz.regions)
-	--local datastr = {}
-	--while raz.raz_store:get_area(counter) do
-	--	region_values = raz.raz_store:get_area(counter,true,true)	
---	end
-	--local datastr = minetest.serialize(raz.raz_store)
-	if not region_values then
-		minetest.log("error", "[raz] Failed to serialize AreaStore!")
-		return
-	end
-	local file_name = raz.worlddir .."/".. raz.export_file_name
-	local file, err = io.open(file_name, "w")
-	if err then
-		return err
-	end
-	file:write(region_values)
-	file:close()
-end
-]]--
