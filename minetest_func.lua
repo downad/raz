@@ -233,23 +233,25 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 	local pos = player:get_pos() 
 	local name = player:get_player_name()
 	local hitter_name = hitter:get_player_name()
-	local msg = 14 -- "NO PvP in this zone!",
+	local msg = 35 --  "Mob do no damage in this zone!",
 	-- get the PvP and MvP attribute of the region
 	-- PvP can be true / false - if region is set
 	-- PvP = nil if no region is set - wildernes - the rest off the world
 	local PvP, MvP = raz:get_combat_attributs_for_pos(pos)
 
 	-- if the damage-dealer is no player then 
-	--  deal damage => MvP = true
+	--  deal damage => MvP = true or in wilderness MvP = nil
 	--	deal no damage if MvP = false
 	if hitter:is_player() == false then
-		if MvP == true then
+		if MvP == true or MvP == nil then
 			return false	-- MOB do Damage
 		else
 			raz:msg_handling(msg, name) --  message
 			return true		-- MOB don't do Damge
 		end
 	end
+
+	msg = 14 -- "NO PvP in this zone!",
 	-- if pvp_only_in_pvp_regions == true
 	-- PvP only in PvP regions!
 	if raz.pvp_only_in_pvp_regions == true then
@@ -267,7 +269,7 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 		else
 			raz:msg_handling(msg, name) --  message
 			raz:msg_handling(msg, hitter_name) --  message
-			return true		-- No PvP no Damge
+			return true		-- No MPvP no Damge
 		end
 	end
 

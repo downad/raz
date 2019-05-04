@@ -213,6 +213,7 @@ raz = {
 		[32] = "msg: Success - regions exported!",
 		[33] = "msg: You don't have the privileg 'region_effect'! ",
 		[34] = "msg: There are no region at that pos! ",
+		[35] = "Mob do no damage in this zone!",
 	},
 
 }

@@ -648,9 +648,8 @@ function raz:get_combat_attributs_for_pos(pos)
 				end
 			end
 
-			-- pvp_only_in_pvp_regions = false
-			-- if there are more regions at the same position PvP = false in all
-			-- true an nil can be changed
+			-- if there are more regions at the same position MvP = false in all
+			-- true can nil can be changed
 			if MvP == nil or MvP == true then
 				MvP = data_table.MvP
 			end
