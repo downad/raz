@@ -243,6 +243,9 @@ dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: done
 -- set priviles and commands
 dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	
 
+-- protection against doors
+--dofile(raz.modpath.."/doors.lua")
+
 -- set landrush items
 dofile(raz.modpath.."/items.lua")
 
