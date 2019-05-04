@@ -585,7 +585,7 @@ end
 -- return return_value
 function raz:get_region_attribute(id, region_attribute)
 	local data = raz:get_region_datatable(id)
-	minetest.log("action", "[" .. raz.modname .. "] get_region_attribute! input ID= "..tostring(id).." region_attribute = "..region_attribute )  
+	--minetest.log("action", "[" .. raz.modname .. "] get_region_attribute! input ID= "..tostring(id).." region_attribute = "..region_attribute )  
 		
 	-- check if the attribute is allowed
 	if not raz:string_in_table(region_attribute, raz.region_attribute) then
@@ -605,12 +605,12 @@ function raz:get_region_attribute(id, region_attribute)
 		return_value = data.PvP
 	elseif 	region_attribute == "MvP" then
 		return_value = data.MvP
+	elseif 	region_attribute == "effect" then
+		return_value = data.effect
 	elseif 	region_attribute == "plot" then
 		return_value = data.plot
 	elseif 	region_attribute == "city" then
 		return_value = data.city
-	elseif 	region_attribute == "effect" then
-		return_value = data.effect
 	end 
 
 	return return_value
@@ -648,9 +648,8 @@ function raz:get_combat_attributs_for_pos(pos)
 				end
 			end
 
-			-- pvp_only_in_pvp_regions = false
-			-- if there are more regions at the same position PvP = false in all
-			-- true an nil can be changed
+			-- if there are more regions at the same position MvP = false in all
+			-- true can nil can be changed
 			if MvP == nil or MvP == true then
 				MvP = data_table.MvP
 			end

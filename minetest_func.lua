@@ -95,11 +95,17 @@ function raz:can_interact(pos, name)
 
 	-- the region is not protected
 	local protected = false
+	-- in the region there is no city-attribute
+	local city = false
+	-- in the region there is no plot-attribute
+	local plot = false
 
 	local data_table = {}
 	local owner = ""
 	local guests = {}
 	local is_protected = false
+	local is_city = false
+	local is_plot = false
 	local owners = {}
 
 	-- loop all regions
@@ -112,15 +118,25 @@ function raz:can_interact(pos, name)
 			owner = data_table.owner
 			guests = data_table.guests --<- this is a string!
 			is_protected = data_table.protected
+			is_city = data_table.city
+			is_plot = data_table.plot
 
-
+			--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - region_id = "..tostring(regions_id) )
+			--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - is_protected = "..tostring(is_protected) )
+			--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - is_city = "..tostring(is_city) )
+			--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - is_plot = "..tostring(is_plot) )
 
 			-- must this be ckecked?
 			-- if the region is protected (one of the region in an region) then all regions are protected
 			if is_protected == true then
 				protected = true
 			end
-
+			if is_city == true then
+				city = true
+			end
+			if is_plot == true then
+				plot = true
+			end
 			-- create a table of all owners
 			-- insert(owners, owner) in table - if the owner is unknown to the table 	
 			if raz:string_in_table(owner, owners) == false then
@@ -137,17 +153,42 @@ function raz:can_interact(pos, name)
 			if raz:player_is_guest(name, guests) then --and is_protected == true then
 				can_interact = true
 				return can_interact
-			end			
+			end	
 		end -- if regions_id then
 	end -- for regions_id, v in pairs(raz.raz_store:get_areas_for_pos(pos)) do 
 
+	--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - counter = "..tostring(counter) )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - protected = "..tostring(protected) )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - city = "..tostring(city) )
+	--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - plot = "..tostring(plot) )
+	
+	-- no region ID - no counter - no protection
+	if counter == 0 then
+		can_interact = true
+		return can_interact		
+	end
 	-- if one of the region is protected - all are protected 
 	-- if the region is not protected everyone can interact 
-	if protected == true then
-		can_interact = false
+	-- if there is only 1 regtion than protected means protected
+	if counter == 1 then
+		if protected == true then
+			can_interact = false
+		else
+			can_interact = true
+		end
+	elseif counter == 2 then
+		-- more than 2 regions
+		-- has one region the city attribute 
+		-- has one region the (building) plot-attibute 
+		if city == true and plot == true then
+			can_interact = true
+		else
+			can_interact = false
+		end
 	else
-		can_interact = true
+		can_interact = false
 	end
+	--minetest.log("action", "[" .. raz.modname .. "] raz:can_interact(pos, name) - return = "..tostring(can_interact) )
 	return can_interact, raz:table_to_string(owners)
 		
 end
@@ -192,23 +233,25 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 	local pos = player:get_pos() 
 	local name = player:get_player_name()
 	local hitter_name = hitter:get_player_name()
-	local msg = 14 -- "NO PvP in this zone!",
+	local msg = 35 --  "Mob do no damage in this zone!",
 	-- get the PvP and MvP attribute of the region
 	-- PvP can be true / false - if region is set
 	-- PvP = nil if no region is set - wildernes - the rest off the world
 	local PvP, MvP = raz:get_combat_attributs_for_pos(pos)
 
 	-- if the damage-dealer is no player then 
-	--  deal damage => MvP = true
+	--  deal damage => MvP = true or in wilderness MvP = nil
 	--	deal no damage if MvP = false
 	if hitter:is_player() == false then
-		if MvP == true then
+		if MvP == true or MvP == nil then
 			return false	-- MOB do Damage
 		else
 			raz:msg_handling(msg, name) --  message
 			return true		-- MOB don't do Damge
 		end
 	end
+
+	msg = 14 -- "NO PvP in this zone!",
 	-- if pvp_only_in_pvp_regions == true
 	-- PvP only in PvP regions!
 	if raz.pvp_only_in_pvp_regions == true then
@@ -226,10 +269,12 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 		else
 			raz:msg_handling(msg, name) --  message
 			raz:msg_handling(msg, hitter_name) --  message
-			return true		-- No PvP no Damge
+			return true		-- No MPvP no Damge
 		end
 	end
 
 end)
+
+
 
 

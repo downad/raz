@@ -51,6 +51,7 @@ function raz:command_help(param, name)
 	-- value[1] == 'help'
 	local value = string.split(param, " ") 
 	local command = value[2]
+	if command == nil then command = "" end
 	minetest.log("action", "[" .. raz.modname .. "] raz:command_help param: "..tostring(param)) 
 	minetest.log("action", "[" .. raz.modname .. "] raz:command_help command: "..tostring(command)) 
 	local chat_start = "Call command 'region "..command  

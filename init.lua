@@ -213,6 +213,7 @@ raz = {
 		[32] = "msg: Success - regions exported!",
 		[33] = "msg: You don't have the privileg 'region_effect'! ",
 		[34] = "msg: There are no region at that pos! ",
+		[35] = "Mob do no damage in this zone!",
 	},
 
 }
@@ -242,6 +243,9 @@ dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: done
 
 -- set priviles and commands
 dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	
+
+-- protection against doors
+--dofile(raz.modpath.."/doors.lua")
 
 -- set landrush items
 dofile(raz.modpath.."/items.lua")
