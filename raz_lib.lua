@@ -708,10 +708,11 @@ function raz:get_region_center_by_name_and_pos(name, pos)
 			pos1, pos2, data_table = raz:get_region_data_by_id(regions_id)
 			if name == raz:get_region_attribute(regions_id, "owner") then
 				center_pos = raz:get_center_of_box(pos1, pos2)
+				return pos1, pos2, center_pos
 			end
 		end
 	end
-	return pos1, pos2, center_pos
+	return nil, nil, 34
 end
 
 
@@ -1110,4 +1111,28 @@ function raz:print_region_datatable_for_id(id)
 end
 
 
+-- Marks region position 1
+raz.markPos1 = function(name)
+	local pos = raz.command_players[name].pos1
+	if raz.marker1[name] ~= nil then -- Marker already exists
+		raz.marker1[name]:remove() -- Remove marker
+		raz.marker1[name] = nil
+	end
+	if pos ~= nil then -- Add marker
+		raz.marker1[name] = minetest.add_entity(pos, "raz:pos1")
+		raz.marker1[name]:get_luaentity().active = true
+	end
+end
 
+-- Marks region position 2
+raz.markPos2 = function(name)
+	local pos = raz.command_players[name].pos2
+	if raz.marker2[name] ~= nil then -- Marker already exists
+		raz.marker2[name]:remove() -- Remove marker
+		raz.marker2[name] = nil
+	end
+	if pos ~= nil then -- Add marker
+		raz.marker2[name] = minetest.add_entity(pos, "raz:pos2")
+		raz.marker2[name]:get_luaentity().active = true
+	end
+end

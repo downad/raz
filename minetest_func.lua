@@ -276,5 +276,40 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 end)
 
 
+-- register a  punchnode for the edge command
+minetest.register_on_punchnode(function(pos, node, puncher)
+	local name = puncher:get_player_name()
+	-- Currently setting position
+	if name ~= "" and raz.set_command[name] then
+		if raz.set_command[name] == "pos1" then
+			if not raz.command_players[name] then
+				raz.command_players[name] = {pos1 = pos}
+			else
+				raz.command_players[name].pos1 = pos
+			end
+			-- set marker pos1
+			raz.markPos1(name)
+			-- be ready for pos2
+			raz.set_command[name] = "pos2"
+			minetest.chat_send_player(name,
+					"Position 1 set to "
+					..minetest.pos_to_string(pos))
+		elseif raz.set_command[name] == "pos2" then
+			if not raz.command_players[name] then
+				raz.command_players[name] = {pos2 = pos}
+			else
+				raz.command_players[name].pos2 = pos
+			end
+			-- set marker pos2
+			raz.markPos2(name)
+			-- clear set_command
+			raz.set_command[name] = nil
+			minetest.chat_send_player(name,
+					"Position 2 set to "
+					..minetest.pos_to_string(pos))
+		end
+	end
+end)
+
 
 

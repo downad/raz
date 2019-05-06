@@ -21,11 +21,12 @@ License:
 	GPLv3
 ]]--
 --register items and enitiy
+
+
 -- got this from https://github.com/Bremaweb/landrush
 -- textures and model from Bremaweb/landrush
 -- This is a fork of 0gb.us' landclaim mod http://forum.minetest.net/viewtopic.php?id=3679.
 -- made it workable with raz by downad 
-
 minetest.register_node("raz:landclaim", {
 	description = "Land Rush Land Claim",
 	tiles = {"landrush_landclaim.png"},
@@ -105,4 +106,48 @@ minetest.register_entity("raz:showarea",{
 })
 
 
+-- region pos1 and pos2 marker
+-- got this from
+-- areas - ShadowNinja - https://github.com/minetest-mods/areas
+minetest.register_entity("raz:pos1", {
+	initial_properties = {
+		visual = "cube",
+		visual_size = {x=1.1, y=1.1},
+		textures = {"areas_pos1.png", "areas_pos1.png",
+		            "areas_pos1.png", "areas_pos1.png",
+		            "areas_pos1.png", "areas_pos1.png"},
+		collisionbox = {-0.55, -0.55, -0.55, 0.55, 0.55, 0.55},
+	},
+	on_step = function(self, dtime)
+		if self.active == nil then
+			self.object:remove()
+		end
+	end,
+	on_punch = function(self, hitter)
+		self.object:remove()
+		local name = hitter:get_player_name()
+		raz.marker1[name] = nil
+	end,
+})
+
+minetest.register_entity("raz:pos2", {
+	initial_properties = {
+		visual = "cube",
+		visual_size = {x=1.1, y=1.1},
+		textures = {"areas_pos2.png", "areas_pos2.png",
+		            "areas_pos2.png", "areas_pos2.png",
+		            "areas_pos2.png", "areas_pos2.png"},
+		collisionbox = {-0.55, -0.55, -0.55, 0.55, 0.55, 0.55},
+	},
+	on_step = function(self, dtime)
+		if self.active == nil then
+			self.object:remove()
+		end
+	end,
+	on_punch = function(self, hitter)
+		self.object:remove()
+		local name = hitter:get_player_name()
+		raz.marker2[name] = nil
+	end,
+})
 

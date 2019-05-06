@@ -184,6 +184,7 @@ function raz:command_pos(name,pos,edge)
 			raz.command_players[name].pos1 = pos
 		end
 		minetest.chat_send_player(name, "Position 1: " .. minetest.pos_to_string(pos))
+		raz.markPos1(name)
 	elseif edge == 2 then
 		if not raz.command_players[name] then
 			raz.command_players[name] = {pos2 = pos}
@@ -191,10 +192,37 @@ function raz:command_pos(name,pos,edge)
 			raz.command_players[name].pos2 = pos
 		end
 		minetest.chat_send_player(name, "Position 2: " .. minetest.pos_to_string(pos))
+		raz.markPos2(name)
 	end
 	return 0
 end
 
+-----------------------------------------
+--
+-- command pos1 or pos2
+-- privileg: region_mark
+--
+-----------------------------------------
+-- called: 'region mark' 
+-- Select positions by punching two nodes.
+-- input:
+-- 		param 	(string)
+--		name 	(string) 	of the player
+-- msg/error handling:
+-- return err if privileg is missing
+-- return 36 - no error: "msg: Select positions by punching two nodes."
+function raz:command_mark(param, name)
+	-- check privileg
+	local err = raz:has_region_mark(name)
+	if err ~= true then
+		raz:msg_handling( err, name ) --  message and error handling
+		return err
+	end
+	-- set set_command for the registered punchnode to
+	-- pos1
+	raz.set_command[name] = "pos1"
+	return 36
+end
 
 -----------------------------------------
 --
@@ -349,8 +377,13 @@ function raz:command_remove(param, name)
 		if raz.raz_store:get_area(id) then
 			local data_table = raz:get_region_datatable(id)
 			if name == data_table.owner or minetest.check_player_privs(name, { region_admin = true }) then
-				raz:delete_region(id)
-				minetest.chat_send_player(name, "The region with ID: "..tostring(id).." was removed!")	
+				-- make a backup of all region, use date
+				local backup = raz.backup_file_name..(os.date("%y%m%d_%H%M%S")..".dat" )
+				err = raz:export(backup)
+				if err then
+					raz:delete_region(id)
+					minetest.chat_send_player(name, "The region with ID: "..tostring(id).." was removed!")	
+				end
 			else
 				minetest.chat_send_player(name, "You are not the owner of the region with the ID: "..tostring(id).."!")
 			end
@@ -882,18 +915,37 @@ function raz:command_border(param, name)
 	local is_region_admin = minetest.check_player_privs(name, { region_admin = true })
 	-- get values of param
 	local value = string.split(param:sub(7, -1), " ") 
-
+	-- region ID = nil -> no region
+	local region_id  = nil	
+	local pos1, pos2, data 
+	local center
+	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border value[1] = {"..tostring(value[1]).."}" )  
 	--local player = minetest.get_player_by_name(owner)
 	local player = minetest.env:get_player_by_name(name)
 	local pos = player:getpos()		
 	local owner = name
 	if is_region_admin and value[1] ~= nil then
-		--if minetest.player_exists(value[1]) == true then
+		if minetest.player_exists(value[1]) == true then
 			owner = value[1]
-		--end
+		end
+		-- maybe a region ID is committed
+		if raz.raz_store:get_area(tonumber(value[1])) then 
+			region_id = tonumber(value[1])
+		end
 	end 
-	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border owner = "..owner )  
-	local pos1, pos2, center = raz:get_region_center_by_name_and_pos(owner, pos)
+	
+	-- two cases:
+	-- case 1 region_id == nil 
+	-- 		get pos1, pos2, center by name and pos
+	if region_id == nil then 
+		minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border owner = "..owner )  
+		pos1, pos2, center = raz:get_region_center_by_name_and_pos(owner, pos)
+	else
+	-- case2 - region id is set
+		pos1,pos2,data = raz:get_region_data_by_id(region_id)	
+		minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border region_id = "..tostring(region_id) )  
+		center = raz:get_center_of_box(pos1, pos2)
+	end
 	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border pos1 = "..minetest.serialize(pos1) ) 
 	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border pos2 = "..minetest.serialize(pos2) ) 
 	minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border center = "..tostring(center) ) 
@@ -901,12 +953,14 @@ function raz:command_border(param, name)
 	if type(center) == "table" then 
 		minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border pos = "..minetest.serialize(pos) )  
 		minetest.log("action", "[" .. raz.modname .. "] chatcommand command_border center = "..minetest.serialize(center) )  
-		center.y = (pos.y-1)
+		center.y = (center.y-1)
 		local box = minetest.env:add_entity(center, "raz:showarea")	
 		box:set_properties({
 				visual_size={x=math.abs(pos1.x - pos2.x), y=math.abs(pos1.y - pos2.y), z=math.abs(pos1.z - pos2.z)},
 				collisionbox = {pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z},
 			})
+	else 
+		minetest.chat_send_player(name, "No region found!")
 	end
 end
 -----------------------------------------
