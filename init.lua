@@ -153,7 +153,9 @@ raz = {
 
 	-- init command_players for chatcommands
 	command_players = {},
-
+	marker1 = {},		-- for placing edges-boxes 
+	marker2 = {},		-- for placing edges-boxes 
+	set_command = {},	-- for punchnode function
 
 	-- some defaults
 	-- global PvP in minetest.conf
@@ -214,6 +216,7 @@ raz = {
 		[33] = "msg: You don't have the privileg 'region_effect'! ",
 		[34] = "msg: There are no region at that pos! ",
 		[35] = "Mob do no damage in this zone!",
+		[36] = "msg: Select positions by punching two nodes."
 	},
 
 }

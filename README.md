@@ -69,12 +69,13 @@ region *help* | **command** | Get some infos about the use of the *command* | pr
 region *status* | no params | Get some more infos about the region at your position. | privileg: interact
 region *border* | no params | Make your region at this position visible. | privileg: interact
 | | **name** | Make the region of player**name**  visible. | privileg: region_admin
+| | **ID** | Make the region with the **ID** visible. | privileg: region_admin
 region *own* | no params | Get a list of all your regions. | privileg: region_mark
 region *pos1* | no params |	Set one corner for the region |  privileg: region_mark
 region *pos2* | no params |	Set the second corner for the region |  privileg: region_mark
 region *set_y* | no params | Set the y-values of your region to 90% of the max_height. 1/3 down and 2/3 up. |  privileg: region_mark
 region *set*  | **region_name**| Marks an region with the name **region_name** | privileg: region_mark
-region *remove* | **ID** | Remove an OWN-region with the **ID** | privileg: region_mark
+region *remove* | **ID** | Remove an OWN-region with the **ID**, a backup will be created (only fpr the admin) | privileg: region_mark
 | | **all** | Removes **all** region, a backup will be created. | privileg: region_admin
 region *protect* | **ID**| Protect the region with the ID (only OWN regions) | privileg: region_mark
 region *open* | **ID** | Opens the region with the **ID** for all players to 'dig' (only OWN regions).| privileg: region_mark
@@ -105,3 +106,7 @@ Bremaweb/landrush models
 - landrush_showarea.x
 Bremaweb/landrush textures
 - landrush_landclaim.png
+ShadowNinja/areas
+- areas_pos1.png
+- areas_pos2.png
+

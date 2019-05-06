@@ -41,7 +41,7 @@ minetest.register_privilege("region_mark", "Can set, remove and rename own regio
 minetest.register_chatcommand("region", {
 	description = "Call \'region help <command>\' to get more information about the chatcommand.",
 	params = "<help> <status> <own> <pos1> <pos2> <set_y> <set> <remove> <protect> <open> <invite> <ban> <change_owner> "..
-			"<PvP> <MvP> <show> <export> <import> <convert_areas> <import_areas> <plot> <city> <player>",
+			"<PvP> <MvP> <show> <border> <export> <import> <convert_areas> <import_areas> <plot> <city> <player>",
 	privs = "interact", -- no spezial privileg
 	func = function(name, param)
 		local player = minetest.get_player_by_name(name)
@@ -80,7 +80,7 @@ minetest.register_chatcommand("region", {
 			err = raz:command_pvp(param, name)
 		elseif param:sub(1, 3) == "MvP" then	-- 'end' if param == 
 			err = raz:command_mvp(param, name)
-		elseif param:sub(1, 6) == "effect" then
+		elseif param:sub(1, 6) == "effect" then	-- 'end' if param == 
 			err = raz:command_effect(param, name)
 		elseif param:sub(1, 4) == "show" then	-- 'end' if param == 
 			local numbers = string.split(param:sub(6, -1), " ")
@@ -91,7 +91,7 @@ minetest.register_chatcommand("region", {
 				-- if numbers only contains strings then tonumber become 0 - no error_handling
 				err = raz:command_show(header,name,tonumber(numbers[1]),tonumber(numbers[2]))
 			end
-		elseif param:sub(1, 6) == "border" then
+		elseif param:sub(1, 6) == "border" then		-- 'end' if param == 
 			err = raz:command_border(param, name)
 		elseif param == "export" then 			-- 'end' if param == 
 			-- check privileg region_admin
@@ -127,6 +127,8 @@ minetest.register_chatcommand("region", {
 		elseif param:sub(1, 6) == "player" then
 			local header = true
 			err = raz:command_player_regions(header,param, name)
+		elseif param:sub(1, 4) == "mark" then
+			err = raz:command_mark(param, name)
 			
 
 		elseif param ~= "" then 				-- if no command is found 
@@ -134,33 +136,10 @@ minetest.register_chatcommand("region", {
 		else
 			minetest.chat_send_player(name, "Region chatcommands: Type \"/help region\" for more information.")
 		end -- 'end' if param == 
+
 		raz:msg_handling(err, name) --  message and error handling
 	end -- end function(name, param)
 })
 
---[[
-minetest.register_chatcommand("showarea", {
-	params = "",
-	description = "highlights the boundaries of the current protected area",
-	privs = {interact=true},
-	func = function(name, param)
-		minetest.log("action", "[" .. raz.modname .. "] chatcommand showarea name= "..tostring(name) )  
-
-		local player = minetest.env:get_player_by_name(name)
-		local pos = player:getpos()		
-		local pos1, pos2, center = raz:get_region_center_by_name_and_pos(name, pos)
-		if pos1 ~= 34 then 
-			minetest.log("action", "[" .. raz.modname .. "] chatcommand showarea pos = "..minetest.serialize(pos) )  
-			minetest.log("action", "[" .. raz.modname .. "] chatcommand showarea entpos = "..minetest.serialize(center) )  
-			center.y = (pos.y-1)
-			local box = minetest.env:add_entity(center, "raz:showarea")	
-			box:set_properties({
-					visual_size={x=math.abs(pos1.x - pos2.x), y=math.abs(pos1.y - pos2.y)},
-					collisionbox = {pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z},
-				})
-		end
-	end,
-})
 
 
-]]--
