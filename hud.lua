@@ -47,7 +47,7 @@ function raz:update_hud(player, hud_stringtext, color)
 				name = "Areas",
 				number = 0xFFFFFF,
 				position      = {x = 0, y = 0.85},
-				offset        = {x = 10,   y = 10},
+				offset        = {x = 10,   y = -10},
 				--position = {x=0, y=1},
 				--offset = {x=8, y=-8},
 				text = hud_stringtext,
