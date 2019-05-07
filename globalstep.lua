@@ -36,17 +36,18 @@ minetest.register_globalstep(function(dtime)
 		local pos = vector.round(player:getpos())
 
 		--color for PvP and protected
-		local color = raz.color["white"]
-		local protected = false				-- true then color blue
-		local PvP = false					-- true then color red - both then purple
+		local color = raz.color["white"]	-- default
+		local protected = false				-- true: then color yellow
+		local PvP = false					-- true: then color red 
+											-- both: then purple
 								
 
 		-- all pos without any region are wilderness
-		local hud_stringtext = "" --"wilderness"
+		local hud_stringtext = "" 
 		if raz.pvp_only_in_pvp_regions then
-			hud_stringtext = raz.default.hud_stringtext
+			hud_stringtext = raz.default.hud_stringtext 	--"wilderness"
 		elseif raz.enable_pvp then	
-			hud_stringtext = raz.default.hud_stringtext_pvp
+			hud_stringtext = raz.default.hud_stringtext_pvp	--"wilderness (PvP)"
 			PvP = true
 		end
 
@@ -56,7 +57,7 @@ minetest.register_globalstep(function(dtime)
 		local PvP_string = ""
 		local effect = ""
 		local is_effect = false
-		local effects = {} -- if there are more than one effect at a place
+		local effects = {}
 		
 		timer = timer + dtime
 
@@ -89,18 +90,18 @@ minetest.register_globalstep(function(dtime)
 				-- then PvP is only allowed in PvP-zones. 
 				-- is PvP allowed in one area at this position PvP is allowed in all. 
 				-- mark this zone as PvP
-				if data_table.PvP and raz.pvp_only_in_pvp_regions then
+				if data_table.PvP == true and raz.pvp_only_in_pvp_regions == true then
 					PvP = true
 					PvP_string = " (PvP) "
 				end
-			 	if data_table.PvP == false and raz.pvp_only_in_pvp_regions then
+			 	if data_table.PvP == false and raz.pvp_only_in_pvp_regions == true then
 					PvP_string = ""
 				end 
 				-- PvP - is pvp_only_in_pvp_regions = false
-				-- then PvP is allowed everyther. 
+				-- then PvP is allowed everythere. 
 				-- is PvP = fales in one area at this Position PvP is forbidden in all. 
 				-- mark this zone as PvP
-				if data_table.PvP and raz.pvp_only_in_pvp_regions == false then
+				if data_table.PvP == true and raz.pvp_only_in_pvp_regions == false then
 					PvP_string = " (PvP) "
 				end
 			 	if data_table.PvP == false and raz.pvp_only_in_pvp_regions  == false then
@@ -110,7 +111,7 @@ minetest.register_globalstep(function(dtime)
 
 				-- has the region an effect
 				effect = data_table.effect
-				if effect ~= "none" or effect ~=nil then
+				if effect ~= "none" and effect ~=nil then
 					--minetest.log("action", "[" .. raz.modname .. "] player in effect-zone ".. tostring(effect))
 					is_effect = true
 					table.insert(effects, effect)
@@ -122,24 +123,28 @@ minetest.register_globalstep(function(dtime)
 		end
 		-- update the hud
 
-		if protected then
-			color = raz.color["blue"]
+		if protected == true then
+			color = raz.color["yellow"]
+			--minetest.log("action", "[" .. raz.modname .. "] protected == true ".. tostring(color))
 		end
-		if PvP then
+		if PvP == true then
 			color = raz.color["red"]
+			--minetest.log("action", "[" .. raz.modname .. "] PvP == true ".. tostring(color))
 		end
-		if protected and PvP then
+		if protected == true and PvP == true then
 			color = raz.color["purple"]
+			--minetest.log("action", "[" .. raz.modname .. "] PVP and protected == true ".. tostring(color))
 		end
-		if is_effect then
+		if is_effect == true then
 			color = raz.color["orange"]
+			--minetest.log("action", "[" .. raz.modname .. "] effect == true ".. tostring(color))
 		end
 
 
 		raz:update_hud(player,hud_stringtext, color)
 
 		-- do region effect
-		if is_effect and timer >= raz.effect.time then
+		if is_effect == true and timer >= raz.effect.time then
 			raz:do_effect_to_player(player,effects)
 			timer = 0
 		end

@@ -82,7 +82,7 @@ raz = {
 	},
 	-- these effects can be set
 	region_effects = {
-		"hot", "bot", "fot", "holy", "dot", "starve", "choke", "evil", 
+		"none", "hot", "bot", "fot", "holy", "dot", "starve", "choke", "evil", 
 	},
 
 	-- some defaults for the AreaStore data
@@ -172,8 +172,8 @@ raz = {
 	-- true: only PvP in region with the PvP-Flag true
 	-- false: PvP all over the world, but regions with PvP = false are safe.
 	-- default: true 
-	pvp_only_in_pvp_regions = minetest.settings:get_bool('pvp_only_in_pvp_regions', true),
-	--pvp_only_in_pvp_regions = false,
+	--pvp_only_in_pvp_regions = minetest.settings:get_bool('pvp_only_in_pvp_regions', true),
+	pvp_only_in_pvp_regions = false,
 
 
 	-- defined Errortextes
@@ -246,9 +246,6 @@ dofile(raz.modpath.."/minetest_func.lua")	-- errorhandling: done
 
 -- set priviles and commands
 dofile(raz.modpath.."/privs_command.lua")	-- errorhandling: done	
-
--- protection against doors
---dofile(raz.modpath.."/doors.lua")
 
 -- set landrush items
 dofile(raz.modpath.."/items.lua")

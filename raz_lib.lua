@@ -20,51 +20,49 @@ Source Code:
 License: 
 	GPLv3
 ]]--
---#---------------------------------------
+-- sed command for functions.txt
+-- sed -n -e '/--################################/,/function/p' raz_lib.lua >functions.txt
+
+
+--################################
 --
--- load, save, insert, delete and update in AreaStore()
---
---#---------------------------------------
---
---
---+++++++++++++++++++++++++++++++++++++++
---
+-- raz:load_regions_from_file()
 -- load the AreaStore() from file
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: nothing
 -- msg/error handling: no
 -- return 0 = no error
 function raz:load_regions_from_file()
 --	minetest.log("action", "[" .. raz.modname .. "] raz:load_regions_from_file()")
 	raz.raz_store:from_file(raz.worlddir .."/".. raz.store_file_name) 
-	-- No Error
-	return 0 
+	return 0 	-- No Error
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:save_regions_to_file()
 -- save AreaStore() to file
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: nothing
 -- msg/error handling: 
 -- return 0 = no error
 function raz:save_regions_to_file()
 --	minetest.log("action", "[" .. raz.modname .. "] raz:save_regions_to_file()")	
 	raz.raz_store:to_file(raz.worlddir .."/".. raz.store_file_name) 
-	-- No Error
-	return 0 
+	return 0 	-- No Error
 end
 
------------------------------------------
+--################################
 --
--- insert region in AreaStore()
---
------------------------------------------
+-- raz:set_region(pos1,pos2,data)
 -- insert a new region, update AreaStore, save AreaStore
--- pos1 and pos2 must be an vector
--- data must be an designed string 
+--
+--
+-- input:
+-- 		pos1, pos2 		as vector
+-- 		data 			as (designed) string 
 --  	use: raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 -- because in the datafield could only stored a string	
 -- msg/error handling: 
@@ -79,12 +77,13 @@ function raz:set_region(pos1,pos2,data)
 	return id
 end
 
------------------------------------------
+--################################
 --
+-- raz:delete_region(id)
 -- delete region from AreaStore()
 --
------------------------------------------
--- delete id form AreaStore()
+--
+-- input: id as number
 -- the get_areas return a pointer, so re-copie the areastore and 'forget' to copie the region with the id
 -- check if id ~=0
 -- msg/error handling:
@@ -130,14 +129,16 @@ function raz:delete_region(id)
 	return 0 
 end
 
------------------------------------------
+--################################
 --
+-- raz:update_regions_data(id,pos1,pos2,data_table)
 -- update datafield  AreaStore()
 --
------------------------------------------
--- 
--- id, the ID to change
--- pos1, pos2 and data are the values to insert
+--
+-- input:
+--		id				as number - the ID to change
+-- 		pos1, pos2 		as vector (table)
+--		data_table		as (designed) string
 -- msg/error handling:
 -- return true 
 function raz:update_regions_data(id,pos1,pos2,data_table)
@@ -182,18 +183,12 @@ function raz:update_regions_data(id,pos1,pos2,data_table)
 end
 
 
---#---------------------------------------
+--################################
 --
--- the functions for string and table manipulation 
---
---#---------------------------------------
---
---
---+++++++++++++++++++++++++++++++++++++++
---
+-- raz:table_to_string(given_table)
 -- convert a table to a string, there is no key!
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		given_table		as table
 -- msg/error handling: no
@@ -209,11 +204,12 @@ function raz:table_to_string(given_table)
 	return return_string
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:string_in_table(given_string, given_table)
 -- check if a string is in an table
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		given_string 	as string
 --		given_table 	as table
@@ -231,11 +227,12 @@ function raz:string_in_table(given_string, given_table)
   return false
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:remove_value_from_table(value, given_table)
 -- remove a value from table
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		value 		as string
 --		given_table as table
@@ -253,11 +250,12 @@ function raz:remove_value_from_table(value, given_table)
 	return return_table
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:convert_string_to_table(string, seperator)
 -- split string into a table, default seperator is ","
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		string 		as string
 --		seperator 	as string {default: seperator = ","}
@@ -275,11 +273,12 @@ function raz:convert_string_to_table(string, seperator)
 end
 
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:remove_double_from_string(given_string, seperator)
 -- remove all doubles from string (list)
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		string as string
 --		seperator as string {default: seperator = ","}
@@ -310,15 +309,17 @@ end
 
 
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:get_area_by_pos1_pos2(pos1, pos2)
 -- get area by pos1 and pos2
 --
---+++++++++++++++++++++++++++++++++++++++
--- input: pos1, pos2 as vector (table) 
+--
+-- input: 
+--		pos1, pos2 as vector (table) 
 -- returns the first area found
 -- msg/error handling: no
--- return nil 	if the is no area
+-- return nil 	if there is no area
 -- return id of the first found area
 function raz:get_area_by_pos1_pos2(pos1, pos2)
 	local found = raz.raz_store:get_areas_in_area(pos1,pos2,true,true) --accept_overlap, include_borders, include_data):
@@ -331,14 +332,15 @@ function raz:get_area_by_pos1_pos2(pos1, pos2)
 end
 
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- az:player_can_mark_region(edge1, edge2, name)
 -- check if the player can_add a region!
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
+--		edge1, edge2	as vector (table)
 --		name			as string (playername)
---		region_name 	as string
 -- msg/error handling: no
 -- returns true - no error or region_admin
 -- return 16 -- "msg: You don't have the privileg 'region_mark'! ",
@@ -391,11 +393,12 @@ function raz:player_can_mark_region(edge1, edge2, name)
 	return can_add	
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:create_landrush_edges(pos)
 -- create_landrush_edges!
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		pos			as table
 -- msg/error handling: no
@@ -406,26 +409,27 @@ function raz:create_landrush_edges(pos)
 	local pos2 = vector.new(pos.x + (raz.landrush_width/2), pos.y + (raz.landrush_height/2), pos.z + (raz.landrush_width/2) )		-- up
 	return pos1, pos2
 end
---#---------------------------------------
+
+
+--################################
 --
--- the functions AreaStore() data field 
---
---#---------------------------------------
---
---
------------------------------------------
---
+-- raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 -- create the designed data string for the AreaStore()
 --
------------------------------------------
--- create the designed data string for the AreaStore()
+--
+-- input:
+--		owner,region_name		as strings, MUST be!
+--		protected				as boolean, if missing the rest is set to default
+--		guests_string			as string, if missing the rest is set to default
+--		PvP,MvP					as booleans, if missing the rest is set to default
+--		effect					as string, if missing the rest is set to default
+--		plot,city				as boolean, if missing the rest is set to default
+--		do_not_check_player		as boolean, if missing the rest is set to default
+-- 			the flag -do_not_check_player = true allows to create regions for owners who are not player - maybe because you will convert an areas.dat for an other system.
 -- data must be an designed string like
--- because in the datafield could only stored a string
 -- data = "return {[\"owner\"] = \"playername\", [\"region_name\"] = \"Meine Wiese mit Haus\" , [\"protected\"] = true, 
 --			[\"guests\"] = \"none/string\", [\"PvP\"] = false, [\"MvP\"] = true, [\"effect\"] = \"none\", [\"plot\"] = false, [\"city\"] = true}"
--- owner and region_name are MUST
--- if the rest is missing default will set.
--- the flag -do_not_check_player = true allows to create regions for owners who are not player - maybe because you will convert an areas.dat for an other system.
+-- because in the datafield could only stored a string
 -- msg/error handling:
 -- return data_string for insert_area(edge1, edge2, DATA) as string
 function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
@@ -480,11 +484,12 @@ function raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effec
 	return data_string
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:get_region_data_by_id(id,no_deserialize)
 -- get pos1, pos2 and data of an region 
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		id 
 --		no_deserialize as boolean {default: no_deserialize = nil}
@@ -514,11 +519,12 @@ function raz:get_region_data_by_id(id,no_deserialize)
 	return 3 -- [3] = "No region with this ID!"
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:get_region_datatable(id)
 -- get the data-field of a regions 
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: id
 -- get the data field of a given region 
 -- msg/error handling: no 
@@ -529,14 +535,14 @@ function raz:get_region_datatable(id)
 	return data
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
--- get_data_string_by_id 
+-- raz:get_data_string_by_id(id)
+-- get the data field of a given region and compose a string  
 --
---+++++++++++++++++++++++++++++++++++++++
--- input: id
--- get the data field of a given region
--- and compose a string 
+--
+-- input:
+-- 		id			as number
 -- msg/error handling: 
 -- return data_string
 -- return 29 -- "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
@@ -573,12 +579,15 @@ function raz:get_data_string_by_id(id)
 	return 29 -- "ERROR: No region with this ID! func: raz:get_region_datatable(id)",
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:get_region_attribute(id, region_attribute)
 -- get one attribute from data-field of a regions 
 --
---+++++++++++++++++++++++++++++++++++++++
--- input: id
+--
+-- input: 
+--			id					as number
+--			region_attribute 	as sting
 -- get the data field of a given region 
 -- and returns the value from one attribute 
 -- msg/error handling: no 
@@ -616,11 +625,12 @@ function raz:get_region_attribute(id, region_attribute)
 	return return_value
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
--- get_combat_attributs_for_pos(pos)
+-- raz:get_combat_attributs_for_pos(pos)
+--	get PvP and MvP as pos for this region
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: pos
 -- get the data field attributes PvP and MvP of a given posision 
 -- msg/error handling: no 
@@ -659,11 +669,12 @@ function raz:get_combat_attributs_for_pos(pos)
 end
 
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:get_owner_for_pos(pos)
 -- get_owner_for_pos(pos)
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: pos
 -- get the data field attributes owner of a given posision 
 -- msg/error handling: no 
@@ -685,11 +696,12 @@ function raz:get_owner_for_pos(pos)
 	end
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
--- get_region_center_by_name_and_pos(name, pos)
+-- raz:get_region_center_by_name_and_pos(name, pos)
+-- find the center of a region found by name and pos
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input:
 --		name 	as string
 --		pos		as vector
@@ -715,7 +727,17 @@ function raz:get_region_center_by_name_and_pos(name, pos)
 	return nil, nil, 34
 end
 
-
+--################################
+--
+-- raz:get_center_of_box(pos1, pos2)
+-- find the center of box with pos1 and pos2
+--
+--
+-- input:
+--		pos1, pos2		as vector
+-- calculate the center and return center_pos 
+-- msg/error handling: no 
+-- return center_pos as vector
 function raz:get_center_of_box(pos1, pos2)
 	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box pos1 = "..minetest.serialize(pos1) )  
 	minetest.log("action", "[" .. raz.modname .. "] get_center_of_box pos2 = "..minetest.serialize(pos2) )  
@@ -746,13 +768,16 @@ function raz:get_center_of_box(pos1, pos2)
 
 	return vector.new( x, y, z)
 end
---+++++++++++++++++++++++++++++++++++++++
+
+--################################
 --
+-- raz:region_is_plot(pos1,pos2)
 -- region_is_plot(pos1,pos2)
 --
---+++++++++++++++++++++++++++++++++++++++
--- input: pos1,pos 	as table
--- msg/error handling: no 
+--
+-- input: 
+--		pos1,pos2 	as table
+-- msg/error handling: 
 -- return true  - if the player can mark this region
 -- 		a region is a building plot if 
 --			all regions have - plot = true
@@ -807,7 +832,18 @@ function raz:region_is_plot(pos1,pos2)
 	return false 	-- no building plot
 end
 
--- function region_set_attribute(name, id, region_attribute, value, bool)
+--################################
+--
+-- raz:region_set_attribute(name, id, region_attribute, value, bool)
+-- set an attribute in an datastring of an region
+--
+--
+-- input: 
+--		name				as string, playername
+--		id					as number, region id
+--		region_attribute	as string
+--		value				as boolean or string, depending on region_attribute
+--		bool				as boolean, only used for invite or ban guest
 -- the default bool is 'nil' - this bool is used to add or remove guests 
 -- this function checks id, region_attribut and value = bool or value = string (effects - hot, bot, holy, dot, choke, evil)
 -- msg/error handling:
@@ -928,19 +964,14 @@ function raz:region_set_attribute(name, id, region_attribute, value, bool)
 	end
 end
 
---#---------------------------------------
+--################################
 --
--- the functions for import and export
---
---#---------------------------------------
---
---
---+++++++++++++++++++++++++++++++++++++++
---
+-- raz:file_exists(file)
 -- file exist?
 --
---+++++++++++++++++++++++++++++++++++++++
--- input: file
+--
+-- input: 
+--		file 
 -- msg/error handling: no
 -- return f
 function raz:file_exists(file)
@@ -949,11 +980,12 @@ function raz:file_exists(file)
   return f ~= nil
 end
 
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:lines_from(file)
 -- get all lines from a file
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: file
 -- get all lines from a file, returns an empty 
 -- list/table if the file does not exist
@@ -978,11 +1010,12 @@ end
 --#---------------------------------------
 --
 --
---+++++++++++++++++++++++++++++++++++++++
+--################################
 --
+-- raz:msg_handling(err, name)
 -- handle errors and messages
 --
---+++++++++++++++++++++++++++++++++++++++
+--
 -- input: 
 --		err as number or string
 --		err 0 -> no error, no output
@@ -1028,6 +1061,14 @@ end
 
 
 
+--################################
+--
+-- raz:print_regions()
+-- print all regions
+--
+--
+-- input: nothing
+-- msg/error handling: no
 -- print a List of all regions to the minetest.log
 -- for debug only
 function raz:print_regions()
@@ -1059,6 +1100,14 @@ function raz:print_regions()
 	end
 end
 
+--################################
+--
+-- raz:print_region_datatable_for_id(id)
+-- print the region with the id
+--
+--
+-- input: id as number, region_id
+-- msg/error handling: no
 -- a debug function for region_datatable
 function raz:print_region_datatable_for_id(id)
 	if raz.debug == false then
@@ -1110,8 +1159,15 @@ function raz:print_region_datatable_for_id(id)
 	end
 end
 
-
+--################################
+--
+-- raz.markPos1 = .... (name)
 -- Marks region position 1
+--
+--
+-- input: 
+--	name 		as string, playername
+-- msg/error handling: no
 raz.markPos1 = function(name)
 	local pos = raz.command_players[name].pos1
 	if raz.marker1[name] ~= nil then -- Marker already exists
@@ -1124,7 +1180,15 @@ raz.markPos1 = function(name)
 	end
 end
 
+--################################
+--
+-- raz.markPos2 = .... (name)
 -- Marks region position 2
+--
+--
+-- input: 
+--	name 		as string, playername
+-- msg/error handling: no
 raz.markPos2 = function(name)
 	local pos = raz.command_players[name].pos2
 	if raz.marker2[name] ~= nil then -- Marker already exists

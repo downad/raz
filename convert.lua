@@ -20,10 +20,17 @@ Source Code:
 License: 
 	GPLv3
 ]]--
--- convert areas to raz
+
+-----------------------------------------
+--
+-- convert areas 
+-- [areas - ShadowNinja - https://github.com/minetest-mods/areas] to raz
+--
+-----------------------------------------
 -- Load the areas table from the save file
 -- convert them to the converted_areas table
 -- call the function: raz:areas_export(raz.areas_raz_export,converted_areas) to export the table
+-- msg/error handling: 
 -- return 4 - file did not exist
 -- return err - from io.open
 -- return the returnvalue from raz:areas_export(raz.areas_raz_export,converted_areas)
@@ -159,13 +166,18 @@ end
 
 
 
-
+-----------------------------------------
+--
+-- Export the AreaStore table to a file
+--
+-----------------------------------------
 -- Export the AreaStore table to a file
 -- the export-file has this format, 3 lines: [min/pos1], [max/pos2], [data]
-	-- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
-	-- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
-	--	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["plot"] = false, ["city"] = false}
--- return 0 - no error
+-- 	return {["y"] = -15, ["x"] = -5, ["z"] = 154}
+-- 	return {["y"] = 25, ["x"] = 2, ["z"] = 160}
+--	return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["plot"] = false, ["city"] = false}
+-- msg/error handling: 
+-- return 5 -- successfully exported
 -- return err from io.open
 function raz:areas_export(export_file_name, converted_areas)
 	local counter = 0

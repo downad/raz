@@ -109,6 +109,7 @@ minetest.register_entity("raz:showarea",{
 -- region pos1 and pos2 marker
 -- got this from
 -- areas - ShadowNinja - https://github.com/minetest-mods/areas
+-- made it workable with raz by downad 
 minetest.register_entity("raz:pos1", {
 	initial_properties = {
 		visual = "cube",
