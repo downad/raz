@@ -23,13 +23,15 @@ License:
 
 -- set some regions
 local data = ""
+-- dont check player
 local do_not_check_player = false 	-- default: check player
 
--- test 1
+-- set a region as "Mein Haus"
+-- invited guests: elrond an dinad
 -- vector(x,y,z) y -> up/down
 local pos1 = vector.new(0, -15, 128)  	-- down
 local pos2 = vector.new(-6, 25, 136)	-- up
-local owner = "adownad"
+local owner = "downad"
 local region_name = "Mein Haus"
 local protected = true				-- default = false
 local guest = ""					-- default = ""
@@ -42,15 +44,14 @@ local guests = {}
 local PvP = true					-- default = false		
 local MvP = true					-- default = true
 local effect = "none"				-- default = none
-local plot = true					-- default = false
+local plot = false					-- default = false
+local city = false					-- default = false
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
+	raz:set_region(pos1,pos2,data)
 end
 
 --test 2
@@ -70,13 +71,11 @@ effect = "dot"					-- default = none
 plot = false					-- default = false	
 city = false					-- fefault = false
 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
+	raz:set_region(pos1,pos2,data)
 end
 
 --test 3
@@ -98,13 +97,11 @@ city = false					-- fefault = false
 
 
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
+	raz:set_region(pos1,pos2,data)
 end
 
 --test 4
@@ -126,13 +123,11 @@ city = false					-- fefault = false
 
 
  
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
+	raz:set_region(pos1,pos2,data)
 end
 
 
@@ -155,13 +150,11 @@ city = false					-- fefault = false
 
 
 
-data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,do_not_check_player)
+data = raz:create_data(owner,region_name,protected,guests_string,PvP,MvP,effect,plot,city,do_not_check_player)
 if data == 1 then
 	minetest.log("action", "[" .. raz.modname .. "] can not create data!" )  
 else
-	if raz.debug then
-		raz:set_region(pos1,pos2,data)
-	end
+	raz:set_region(pos1,pos2,data)
 end
 
 -- print a list of all raz.regions

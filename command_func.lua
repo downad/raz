@@ -70,7 +70,9 @@ function raz:command_help(param, name)
 	elseif command == "pos2" then
 		chat_end = chat_start.."' to set your position, this is needed to mark/set your region. Go to one edge and call the command \'region pos1\',"..
 			" go to the second edge and use the command \'region pos2\'. With \'region set {region_name}\' can zu mark your region.  [privileg: region_mark]"
-	elseif command == "set_y" then
+	elseif command == "mark" then
+		chat_end = chat_start.."' to select positions by punching two nodes. [privileg: region_mark]"
+	elseif command == "max_y" then
 		chat_end = chat_start.."' to set the y-values of your region to 90% of the max_height. 1/3 down and 2/3 up.  [privileg: region_mark]"
 	elseif command == "set"	then
 		chat_end = chat_start.." {region_name}' to mark a region with the name {region_name}. This regions is NOT protected! Go to one edge and call "..
@@ -112,8 +114,6 @@ function raz:command_help(param, name)
 			"So a city can be protected and named (by region_admin) but players can place there own regions. [privileg: region_admin]"
 	elseif command == "player" then
 		chat_end = chat_start.." {player_name}' show a list of all regions of this player! [privileg: region_admin]"
-	
-
 
 
 	else
@@ -199,7 +199,7 @@ end
 
 -----------------------------------------
 --
--- command pos1 or pos2
+-- command mark
 -- privileg: region_mark
 --
 -----------------------------------------
@@ -218,26 +218,25 @@ function raz:command_mark(param, name)
 		raz:msg_handling( err, name ) --  message and error handling
 		return err
 	end
-	-- set set_command for the registered punchnode to
-	-- pos1
+	-- set set_command for the registered punchnode to pos1
 	raz.set_command[name] = "pos1"
 	return 36
 end
 
 -----------------------------------------
 --
--- command set_y
+-- command max_y
 -- privileg: region_mark
 --
 -----------------------------------------
--- called: 'region set_y'
+-- called: 'region max_y'
 -- modifies y1 and y2 to 90% of max_height
 -- input:
 --		name 	(string) 	of the player
 -- msg/error handling:
 -- return err if privileg is missing
 -- return 0 - no error
-function raz:command_set_y(name)
+function raz:command_max_y(name)
 
 	-- check privileg
 	local err = raz:has_region_mark(name)
@@ -355,7 +354,8 @@ end
 -----------------------------------------
 --
 -- command remove
--- privileg: region_mark
+-- privileg: region_mark for own region
+-- privileg: region_admin for regions by ID or all regions
 --
 -----------------------------------------
 -- called: 'region remove {id} 
@@ -790,6 +790,7 @@ function raz:command_player_regions(header,param, name)
 	minetest.chat_send_player(name, chat_string_start..chat_string..".")
 	return 0
 end
+
 --+++++++++++++++++++++++++++++++++++++++
 --
 -- Export the AreaStore() to a file 
@@ -801,7 +802,8 @@ end
 -- the export-file has this format, 3 lines: [min/pos1], [max/pos2], [data]
 -- 		return {["y"] = -15, ["x"] = -5, ["z"] = 154}
 -- 		return {["y"] = 25, ["x"] = 2, ["z"] = 160}
---		return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", ["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["plot"] = false}
+--		return {["owner"] = "adownad", ["region_name"] = "dinad Weide", ["protected"] = false, ["guests"] = ",", 
+--			["PvP"] = false, ["MvP"] = true, ["effect"] = "dot", ["plot"] = false, ["city"] = false}
 -- msg/error handling:
 -- return 0 - no error
 -- return err from io.open
@@ -896,10 +898,13 @@ end
 -----------------------------------------
 --
 -- command border
--- privileg: interact
+-- privileg: interact 	for own region
+-- privileg: region_admin	for other, by name or ID
 --
 -----------------------------------------
--- called: 'region border {name}' id you are region_admin
+-- called: 'region border'
+-- 		'region {name}' if you are region_admin
+--		'region {id}'	if you are region_admin
 -- shows a box over the region
 -- input:
 --		param 	(string)
@@ -963,10 +968,11 @@ function raz:command_border(param, name)
 		minetest.chat_send_player(name, "No region found!")
 	end
 end
+
 -----------------------------------------
 --
 -- command plot +/-
--- privileg: region_mvp
+-- privileg: region_admin
 --
 -----------------------------------------
 -- called: 'region plot {id} {+/-}
@@ -1008,7 +1014,7 @@ end
 -----------------------------------------
 --
 -- command city ID +/-
--- privileg: region_mvp
+-- privileg: region_admin
 --
 -----------------------------------------
 -- called: 'region city {id} {+/-}
@@ -1051,7 +1057,7 @@ end
 -----------------------------------------
 --
 -- command effect
--- privileg: region_admin
+-- privileg: region_effect
 --
 -----------------------------------------
 -- called: 'region effect {id} {effect}

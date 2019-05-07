@@ -217,19 +217,23 @@ end
 
 --+++++++++++++++++++++++++++++++++++++++
 --
--- player is guest (pos, name)
+-- Register punchplayer callback.
 --
 --+++++++++++++++++++++++++++++++++++++++
--- Register punchplayer callback.
---	should return true to prevent the default damage mechanism
+-- punchplayer callback
+-- should return true to prevent the default damage mechanism
 -- is hitter a player -> PvP 
---			a mob -> MvP
--- 	return false  - in PvP regions
---  return true   - if PvP is forbidden
---	return false  - in MvP regions from hitter:is_player == false
---  return true   - if MvP is forbidden
+-- 	return false  - (do damage) in PvP regions			
+--  return true   - (no damage) if PvP is forbidden
+-- 	if no region is set: 
+-- 	return true	  - (do damage) if pvp_only_in_pvp_regions = false
+-- 	return true	  - (no damage) if pvp_only_in_pvp_regions = true
+--
+-- is hitter a mob -> MvP
+--	return false  - (do damage) if MvP is set true in a region
+--  return false  - (do damage) if no region is set -> MvP == nil
+--  return true   - (no damage) if MvP is set false (forbidden) in an region
 minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
-	--local isPlayer = hitter:is_player()
 	local pos = player:get_pos() 
 	local name = player:get_player_name()
 	local hitter_name = hitter:get_player_name()
@@ -276,7 +280,17 @@ minetest.register_on_punchplayer(function(player, hitter, time_from_last_punch, 
 end)
 
 
--- register a  punchnode for the edge command
+
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- Register register_on_punchnode callback.
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- punchnode callback
+-- is user for the command '/region mark'
+-- to punch a node an set pos1 and pos2 of an region
+-- if pos1 and pos2 are set 
+-- raz.set_command[name] = nil clears the function
 minetest.register_on_punchnode(function(pos, node, puncher)
 	local name = puncher:get_player_name()
 	-- Currently setting position

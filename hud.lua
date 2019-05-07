@@ -21,6 +21,19 @@ License:
 	GPLv3
 ]]--
 
+
+--+++++++++++++++++++++++++++++++++++++++
+--
+-- raz:update_hud(player, hud_stringtext, color)
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: 
+--		player			as playerobject
+--		hud_stingtext 	as string
+--		color 			as string
+-- ids = hud-id   
+-- msg/error handling: no 
+-- return owner 	as string
 function raz:update_hud(player, hud_stringtext, color)
     local name = player:get_player_name()
     local ids = raz.player_huds[name]
@@ -34,7 +47,7 @@ function raz:update_hud(player, hud_stringtext, color)
 				name = "Areas",
 				number = 0xFFFFFF,
 				position      = {x = 0, y = 0.85},
-				offset        = {x = 10,   y = 0},
+				offset        = {x = 10,   y = 10},
 				--position = {x=0, y=1},
 				--offset = {x=8, y=-8},
 				text = hud_stringtext,

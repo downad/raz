@@ -20,7 +20,17 @@ Source Code:
 License: 
 	GPLv3
 ]]--
+
+--+++++++++++++++++++++++++++++++++++++++
+--
 -- do an / all effect to player
+--
+--+++++++++++++++++++++++++++++++++++++++
+-- input: 
+--		player 		as object player
+--		effect 		as string
+-- get the data field attributes owner of a given posision 
+-- msg/error handling: no 
 function raz:do_effect_to_player(player,effects)
 	local hot_done = false 		-- hot: heal over time 
 	local fot_done = false		-- fot: feed over time
@@ -60,7 +70,7 @@ function raz:do_effect_hot(player)
 		player:set_hp(math.max(player:get_hp() + raz.effect.hot, 0))
 		minetest.chat_send_player(player:get_player_name(), "The region regenerate you with "..raz.effect.hot.." life!")
 	else
-		minetest.chat_send_player(player:get_player_name(), "Here you healed!")
+		--minetest.chat_send_player(player:get_player_name(), "Here you healed!")
 	end
 	return true
 end
@@ -71,7 +81,7 @@ function raz:do_effect_bot(player)
 		player:set_breath(math.max(player:get_breath() + raz.effect.bot, 0))
 		minetest.chat_send_player(player:get_player_name(), "The region gives you "..raz.effect.bot.." breath!")
 	end
-		minetest.chat_send_player(player:get_player_name(), "Your are full of air.")
+		--minetest.chat_send_player(player:get_player_name(), "Your are full of air.")
 	return true
 end
 
